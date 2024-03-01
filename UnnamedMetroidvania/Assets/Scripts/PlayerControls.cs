@@ -25,8 +25,6 @@ public class PlayerControls : MonoBehaviour
 
     private Rigidbody2D enemyRB;
     private Rigidbody2D playerRB;
-    private Collider2D enemyCollider;
-    private Collider2D playerCollider;
     private bool ignore = false;
 
 
@@ -63,7 +61,8 @@ public class PlayerControls : MonoBehaviour
         if (Input.GetButtonDown("Crouch")) //får ens karakter til at crouch og uncrouch
         {
             crouch = true;
-        } else if (Input.GetButtonUp("Crouch"))
+        }
+        else if (Input.GetButtonUp("Crouch"))
         {
             crouch = false;
         }
@@ -83,7 +82,7 @@ public class PlayerControls : MonoBehaviour
             }
         }
         //Når man har Iframes kan man ikke rør en enemy
-        if(IFrames <= 0)
+        if (IFrames <= 0)
         {
             ignore = false;
         }
@@ -125,7 +124,7 @@ public class PlayerControls : MonoBehaviour
 
                 //Henter rigidbodyen af enemyen og playeren
                 enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
-                playerRB = gameObject.GetComponent<Rigidbody2D>(); 
+                playerRB = gameObject.GetComponent<Rigidbody2D>();
 
                 //Laver en normalvektor og scaler den op så spilleren tager knockback
                 Vector2 knockback = new Vector2(enemyRB.position.x - playerRB.position.x, enemyRB.position.y - playerRB.position.y);

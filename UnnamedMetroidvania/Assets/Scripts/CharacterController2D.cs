@@ -123,7 +123,7 @@ public class CharacterController2D : MonoBehaviour
 				Flip();
 			}
 		}
-		// If the player should jump...
+		// If the player should jump...     CHANGE HERE
 		if (m_Grounded && jump)
 		{
 			// Add a vertical force to the player.
