@@ -17,12 +17,16 @@ public class PlayerControls : MonoBehaviour
     float horizontalMove = 0f;
     bool jump = false;
     bool crouch;
-    //public Collider Sword;
+    public float MDamage = 1.2f;
+    int Upgrade = 1;
+    float DamageMulti = 1f;
+
+    [Header("Events and references")]
+    [Space]
+
     public UnityEvent A_Sword;
     public UnityEvent D_Sword;
     public GameObject Sword;
-    public float Damage = 1.2f;
-    private float DamageMulti = 1f;
 
     void Start()
     {
@@ -34,6 +38,7 @@ public class PlayerControls : MonoBehaviour
         {
             D_Sword = new UnityEvent();
         }
+        OnUpgrade();
     }
 
     void Update()
@@ -52,6 +57,7 @@ public class PlayerControls : MonoBehaviour
         {
             crouch = false;
         }
+
         Cooldown -= Time.deltaTime;
         //Debug.Log(Cooldown);
 
@@ -65,6 +71,7 @@ public class PlayerControls : MonoBehaviour
                 Invoke("endAttack", ActiveFrames); //fjerne sværet efter en bestemt mængde tid
             }
         }
+
     }
     void startAttack()
     {
@@ -80,6 +87,11 @@ public class PlayerControls : MonoBehaviour
     {
         Controller.Move(horizontalMove, crouch, jump);
         jump = false;
+    }
+    void OnUpgrade()
+    {
+        Upgrade++;
+        MDamage = MDamage * Upgrade * DamageMulti;
     }
 }
 

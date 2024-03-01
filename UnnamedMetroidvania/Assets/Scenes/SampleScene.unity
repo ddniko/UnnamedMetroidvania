@@ -518,6 +518,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EHP: 2
   Sword: {fileID: 1600683292}
+  Player: {fileID: 2050790016}
 --- !u!1 &633254828
 GameObject:
   m_ObjectHideFlags: 0
@@ -1181,6 +1182,7 @@ MonoBehaviour:
   ActiveFrames: 0.5
   AttackSpeed: 3
   runSpeed: 0.5
+  MDamage: 1000
   A_Sword:
     m_PersistentCalls:
       m_Calls:

@@ -13,12 +13,11 @@ public class EnemyHP : MonoBehaviour
     {
         if (collision == Sword)
         {
-            Debug.Log("ouch!");
-            EHP--;
+            EHP -= Player.MDamage;
         }
     }
 
-    void Update()
+    void Update() //måske fixedupdate
     {
         if (EHP <= 0)
         {
