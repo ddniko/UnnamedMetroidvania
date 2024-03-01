@@ -12,6 +12,7 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private float runSpeed = 40f; //speed kan ændres efter behov
 
     float Cooldown = 0f;
+    float IFrames = 0f;
 
     //defineret yderst så de kan bruges i fixedupdate
     float horizontalMove = 0f;
@@ -20,6 +21,14 @@ public class PlayerControls : MonoBehaviour
     public float MDamage = 1.2f;
     int Upgrade = 1;
     float DamageMulti = 1f;
+    public int PHP = 5;
+
+    private Rigidbody2D enemyRB;
+    private Rigidbody2D playerRB;
+    private Collider2D enemyCollider;
+    private Collider2D playerCollider;
+    private bool ignore = false;
+
 
     [Header("Events and references")]
     [Space]
@@ -27,6 +36,7 @@ public class PlayerControls : MonoBehaviour
     public UnityEvent A_Sword;
     public UnityEvent D_Sword;
     public GameObject Sword;
+
 
     void Start()
     {
@@ -59,6 +69,7 @@ public class PlayerControls : MonoBehaviour
         }
 
         Cooldown -= Time.deltaTime;
+        IFrames -= Time.deltaTime;
         //Debug.Log(Cooldown);
 
         //Måske tiføj dette til fixedupdate, da det kører efter physics ticks
@@ -71,7 +82,12 @@ public class PlayerControls : MonoBehaviour
                 Invoke("endAttack", ActiveFrames); //fjerne sværet efter en bestemt mængde tid
             }
         }
-
+        //Når man har Iframes kan man ikke rør en enemy
+        if(IFrames <= 0)
+        {
+            ignore = false;
+        }
+        Physics2D.IgnoreLayerCollision(7, 8, ignore);
     }
     void startAttack()
     {
@@ -92,6 +108,30 @@ public class PlayerControls : MonoBehaviour
     {
         Upgrade++;
         MDamage = MDamage * Upgrade * DamageMulti;
+    }
+
+    //Knockback og Iframes
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        //Hvis man har Iframes kører dette ikke
+        if (IFrames <= 0f)
+        {
+            //Hvis spilleren rør en "enemy" tager de skade, for Iframs
+            if (collision.gameObject.tag == "Enemy")
+            {
+                IFrames = 1.5f;
+                ignore = true;
+                PHP--;
+
+                //Henter rigidbodyen af enemyen og playeren
+                enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
+                playerRB = gameObject.GetComponent<Rigidbody2D>(); 
+
+                //Laver en normalvektor og scaler den op så spilleren tager knockback
+                Vector2 knockback = new Vector2(enemyRB.position.x - playerRB.position.x, enemyRB.position.y - playerRB.position.y);
+                playerRB.AddForce(-knockback * 500f);
+            }
+        }
     }
 }
 
