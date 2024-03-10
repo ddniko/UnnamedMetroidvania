@@ -84,10 +84,8 @@ public class PlayerControls : MonoBehaviour
             Dashing = true;
             DashTimer = DashCooldown;
         }
-<<<<<<< Updated upstream
         //Når man har Iframes kan man ikke rør en enemy
         if(IFrames <= 0)
-=======
         if (Input.GetButtonDown("Fire1") && Cooldown <= 0f) //sørger for at man først kan attack efter 3 sek
         {
             startAttack(); //kørere startattack metoden
@@ -96,7 +94,6 @@ public class PlayerControls : MonoBehaviour
         }
 
         if (IFrames <= 0) //Når man har Iframes kan man ikke rør en enemy
->>>>>>> Stashed changes
         {
             ignore = false;
         }
@@ -137,10 +134,9 @@ public class PlayerControls : MonoBehaviour
 
                 //Henter rigidbodyen af enemyen og playeren
                 enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
-<<<<<<< Updated upstream
+
                 playerRB = gameObject.GetComponent<Rigidbody2D>(); 
-=======
->>>>>>> Stashed changes
+
 
                 //Laver en normalvektor og scaler den op så spilleren tager knockback
                 Vector2 knockback = new Vector2(enemyRB.position.x - playerRB.position.x, enemyRB.position.y - playerRB.position.y);

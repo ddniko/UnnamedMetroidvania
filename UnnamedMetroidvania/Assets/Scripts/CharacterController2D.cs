@@ -162,13 +162,8 @@ public class CharacterController2D : MonoBehaviour
 				Flip();
 			}
 		}
-<<<<<<< Updated upstream
-		// If the player should jump...
-		if (m_Grounded && jump)
-=======
 		// If the player should jump...     CHANGE HERE
 		if (JumpCount >= 1 && jump && !m_Walled)
->>>>>>> Stashed changes
 		{
             // Add a vertical force to the player.
             m_Grounded = false;
