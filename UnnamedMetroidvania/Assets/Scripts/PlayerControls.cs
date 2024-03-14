@@ -9,19 +9,22 @@ public class PlayerControls : MonoBehaviour
 
     [SerializeField] private float ActiveFrames = 0.5f;
     [SerializeField] private float AttackSpeed = 3f;
-    [SerializeField] private float runSpeed = 40f; //speed kan ændres efter behov
+    [SerializeField] private float runSpeed = 40f; //speed kan Ã¦ndres efter behov
+    [SerializeField] private float DashCooldown = 0.7f;
 
     float Cooldown = 0f;
     float IFrames = 0f;
 
-    //defineret yderst så de kan bruges i fixedupdate
+    //defineret yderst sÃ¥ de kan bruges i fixedupdate
     float horizontalMove = 0f;
     bool jump = false;
     bool crouch;
+    bool Dashing;
     public float MDamage = 1.2f;
     int Upgrade = 1;
     float DamageMulti = 1f;
     public int PHP = 5;
+    float DashTimer = 0.7f;
 
     private Rigidbody2D enemyRB;
     private Rigidbody2D playerRB;
@@ -38,6 +41,7 @@ public class PlayerControls : MonoBehaviour
 
     void Start()
     {
+        playerRB = gameObject.GetComponent<Rigidbody2D>();
         if (A_Sword == null) //failstate for events, ellers er det kinda buggy
         {
             A_Sword = new UnityEvent();
@@ -51,14 +55,22 @@ public class PlayerControls : MonoBehaviour
 
     void Update()
     {
-        horizontalMove = Input.GetAxisRaw("Horizontal") * runSpeed; //bevæger ens karakter horisontant
+        DashTimer -= Time.deltaTime;
+        Cooldown -= Time.deltaTime;
+        IFrames -= Time.deltaTime;
 
-        if (Input.GetButtonDown("Jump")) //Får ens karakter til at hoppe
+        horizontalMove = Input.GetAxisRaw("Horizontal") * runSpeed; //bevÃ¦ger ens karakter horisontant
+
+        if (Input.GetButtonDown("Jump")) //FÃ¥r ens karakter til at hoppe
         {
             jump = true;
+        } 
+        if (Input.GetButtonUp("Jump") && playerRB.velocity.y >= 0)
+        {
+            playerRB.velocity = new Vector2(playerRB.velocity.x,playerRB.velocity.y * 0.5f);
         }
 
-        if (Input.GetButtonDown("Crouch")) //får ens karakter til at crouch og uncrouch
+        if (Input.GetButtonDown("Crouch")) //fÃ¥r ens karakter til at crouch og uncrouch
         {
             crouch = true;
         }
@@ -66,42 +78,40 @@ public class PlayerControls : MonoBehaviour
         {
             crouch = false;
         }
-
-        Cooldown -= Time.deltaTime;
-        IFrames -= Time.deltaTime;
-        //Debug.Log(Cooldown);
-
-        //Måske tiføj dette til fixedupdate, da det kører efter physics ticks
-        if (Cooldown <= 0f) //sørger for at man først kan attack efter 3 sek
+        if (Input.GetButtonDown("Dash") && DashTimer <= 0)
         {
-            if (Input.GetButtonDown("Fire1")) //kan ændres senere
-            {
-                startAttack(); //kørere startattack metoden
-                Cooldown = AttackSpeed; //resetter cooldown til attackspeed
-                Invoke("endAttack", ActiveFrames); //fjerne sværet efter en bestemt mængde tid
-            }
+            Dashing = true;
+            DashTimer = DashCooldown;
         }
-        //Når man har Iframes kan man ikke rør en enemy
+        //NÃ¥r man har Iframes kan man ikke rÃ¸r en enemy
+        if(IFrames <= 0)
+        if (Input.GetButtonDown("Fire1") && Cooldown <= 0f) //sÃ¸rger for at man fÃ¸rst kan attack efter 3 sek
+        {
+            startAttack(); //kÃ¸rere startattack metoden
+            Cooldown = AttackSpeed; //resetter cooldown til attackspeed
+            Invoke("endAttack", ActiveFrames); //fjerne svÃ¦ret efter en bestemt mÃ¦ngde tid
+        }
+
+        if (IFrames <= 0) //NÃ¥r man har Iframes kan man ikke rÃ¸r en enemy
         if (IFrames <= 0)
         {
             ignore = false;
         }
-        Physics2D.IgnoreLayerCollision(7, 8, ignore);
+        Physics2D.IgnoreLayerCollision(7, 8, ignore); //ignorere collision, mellem lag 7 og 8 som er player og enemy
     }
     void startAttack()
     {
-        //Debug.Log("Started?");
-        A_Sword.Invoke(); //invoke kører starter et event, som gør sværet aktivt
+        A_Sword.Invoke(); //invoke kÃ¸rer starter et event, som gÃ¸r svÃ¦ret aktivt
     }
     void endAttack()
     {
-        //Debug.Log("Done?");
-        D_Sword.Invoke(); //starter event, som deaktivere sværet
+        D_Sword.Invoke(); //starter event, som deaktivere svÃ¦ret
     }
     private void FixedUpdate() //lavet i fixedupdate da den opdatere sammen med alle physics calculations
     {
-        Controller.Move(horizontalMove, crouch, jump);
+        Controller.Move(horizontalMove, crouch, jump, Dashing);
         jump = false;
+        Dashing = false;
     }
     void OnUpgrade()
     {
@@ -112,10 +122,10 @@ public class PlayerControls : MonoBehaviour
     //Knockback og Iframes
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        //Hvis man har Iframes kører dette ikke
+        //Hvis man har Iframes kÃ¸rer dette ikke
         if (IFrames <= 0f)
         {
-            //Hvis spilleren rør en "enemy" tager de skade, for Iframs
+            //Hvis spilleren rÃ¸r en "enemy" tager de skade, for Iframs
             if (collision.gameObject.tag == "Enemy")
             {
                 IFrames = 1.5f;
@@ -124,11 +134,18 @@ public class PlayerControls : MonoBehaviour
 
                 //Henter rigidbodyen af enemyen og playeren
                 enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
+
+
+                playerRB = gameObject.GetComponent<Rigidbody2D>(); 
+
                 playerRB = gameObject.GetComponent<Rigidbody2D>();
 
-                //Laver en normalvektor og scaler den op så spilleren tager knockback
+
+
+                //Laver en normalvektor og scaler den op sÃ¥ spilleren tager knockback
                 Vector2 knockback = new Vector2(enemyRB.position.x - playerRB.position.x, enemyRB.position.y - playerRB.position.y);
-                playerRB.AddForce(-knockback * 500f);
+                playerRB.velocity = Vector2.zero;
+                playerRB.AddForce(-knockback * 1000f);
             }
         }
     }
