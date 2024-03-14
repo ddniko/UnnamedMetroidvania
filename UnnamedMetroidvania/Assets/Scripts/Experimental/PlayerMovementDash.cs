@@ -31,6 +31,7 @@ public class NewPlayerMovement : MonoBehaviour
     //Jump
     private bool _isJumpCut;
     private bool _isJumpFalling; //er sand når man ikke er på jorden og ens y-velocity er negativ
+    private int JumpsLeft;
 
     //Wall Jump
     private float _wallJumpStartTime;
@@ -41,6 +42,8 @@ public class NewPlayerMovement : MonoBehaviour
     private bool _dashRefilling;
     private Vector2 _lastDashDir;
     private bool _isDashAttacking; //true mens dash
+    private float LastDash = 2;
+    private bool DashedOff;
 
     #endregion
 
@@ -86,10 +89,27 @@ public class NewPlayerMovement : MonoBehaviour
         LastOnWallTime -= Time.deltaTime;
         LastOnWallRightTime -= Time.deltaTime;
         LastOnWallLeftTime -= Time.deltaTime;
+        LastDash -= Time.deltaTime;
 
         LastPressedJumpTime -= Time.deltaTime;
         LastPressedDashTime -= Time.deltaTime;
+        if (LastDash < 0 && DashedOff || LastOnWallTime > 0)
+        {
+            _dashesLeft = 1;
+            DashedOff = false;
+        }
+        else if (LastOnGroundTime < 0 && JumpsLeft == 1)
+            JumpsLeft--;
+
         #endregion
+
+        if (LastOnGroundTime > 0)
+        {
+            JumpsLeft = 1;
+        }
+            DashedOff = true;
+
+
 
         #region INPUT HANDLER
         _moveInput.x = Input.GetAxisRaw("Horizontal");
@@ -200,7 +220,6 @@ public class NewPlayerMovement : MonoBehaviour
                 _lastDashDir = IsFacingRight ? Vector2.right : Vector2.left;
 
 
-
             IsDashing = true;
             IsJumping = false;
             IsWallJumping = false;
@@ -209,7 +228,6 @@ public class NewPlayerMovement : MonoBehaviour
             StartCoroutine(nameof(StartDash), _lastDashDir);
         }
         #endregion
-
         #region SLIDE CHECKS 
         if (CanSlide() && ((LastOnWallLeftTime > 0 && _moveInput.x < 0) || (LastOnWallRightTime > 0 && _moveInput.x > 0))) //hvis man har været på en væg i lang nok tid uden at bevæge sig, begge sider. Wallcling sætter sig fast på en væg
             IsSliding = true;
@@ -397,7 +415,7 @@ public class NewPlayerMovement : MonoBehaviour
         //Ensures we can't call Jump multiple times from one press
         LastPressedJumpTime = 0;
         LastOnGroundTime = 0; //resetter buffer og cayote timer
-
+        JumpsLeft--;
         #region Perform Jump
         //We increase the force applied if we are falling
         //This means we'll always feel like we jump the same amount 
@@ -449,6 +467,7 @@ public class NewPlayerMovement : MonoBehaviour
 
         _dashesLeft--;
         _isDashAttacking = true;
+        LastDash = Data.dashRefillTime;
 
         SetGravityScale(0);
 
@@ -494,13 +513,15 @@ public class NewPlayerMovement : MonoBehaviour
     {
         //Works the same as the Run but only in the y-axis
         //THis seems to work fine, buit maybe you'll find a better way to implement a slide into this system
-        float speedDif = Data.slideSpeed - RB.velocity.y;
-        float movement = speedDif * Data.slideAccel;
+        //float speedDif = Data.slideSpeed - RB.velocity.y;
+        //float movement = speedDif * Data.slideAccel;
         //So, we clamp the movement here to prevent any over corrections (these aren't noticeable in the Run)
         //The force applied can't be greater than the (negative) speedDifference * by how many times a second FixedUpdate() is called. For more info research how force are applied to rigidbodies.
-        movement = Mathf.Clamp(movement, -Mathf.Abs(speedDif) * (1 / Time.fixedDeltaTime), Mathf.Abs(speedDif) * (1 / Time.fixedDeltaTime));
+        //movement = Mathf.Clamp(movement, -Mathf.Abs(speedDif) * (1 / Time.fixedDeltaTime), Mathf.Abs(speedDif) * (1 / Time.fixedDeltaTime));
 
-        RB.AddForce(movement * Vector2.up);
+        //RB.AddForce(movement * Vector2.up);
+        SetGravityScale(0.3f);
+        RB.velocity = new Vector2(RB.velocity.x, Mathf.Max(RB.velocity.y, -3));
     }
     #endregion
 
@@ -514,7 +535,7 @@ public class NewPlayerMovement : MonoBehaviour
 
     private bool CanJump()
     {
-        return LastOnGroundTime > 0 && !IsJumping;
+        return JumpsLeft >= 0 && !IsJumping;
     }
 
     private bool CanWallJump()
@@ -535,9 +556,9 @@ public class NewPlayerMovement : MonoBehaviour
 
     private bool CanDash()
     {
-        if (!IsDashing && _dashesLeft < Data.dashAmount && LastOnGroundTime > 0 && !_dashRefilling)
+        if (!IsDashing && _dashesLeft < Data.dashAmount && LastOnGroundTime > 0)
         {
-            StartCoroutine(nameof(RefillDash), 1);
+            //StartCoroutine(nameof(RefillDash), 1);
         }
 
         return _dashesLeft > 0;
@@ -545,7 +566,7 @@ public class NewPlayerMovement : MonoBehaviour
 
     public bool CanSlide()
     {
-        if (LastOnWallTime > 0 && !IsJumping && !IsWallJumping && !IsDashing && LastOnGroundTime <= 0)
+        if (LastOnWallTime > 0 && !IsJumping && !IsWallJumping && !IsDashing && LastOnGroundTime <= 0) //hvis bufferen er gået og man ikke er midt i hop eller wallhop eller dasher eller er på jorden
             return true;
         else
             return false;
