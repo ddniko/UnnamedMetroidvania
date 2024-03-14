@@ -10,7 +10,7 @@ public class CharacterController2D : MonoBehaviour
 	[SerializeField] private bool m_AirControl = false;							// Whether or not a player can steer while jumping;
 	[SerializeField] private LayerMask m_WhatIsGround;							// A mask determining what is ground to the character
 	[SerializeField] private Transform m_GroundCheck;                           // A position marking where to check if the player is grounded.
-    [SerializeField] private Transform m_WallCheck;								// en position med en empty gameobject brugt til at tjekke for væg
+    [SerializeField] private Transform m_WallCheck;								// en position med en empty gameobject brugt til at tjekke for vï¿½g
     [SerializeField] private Transform m_CeilingCheck;							// A position marking where to check for ceilings
 	[SerializeField] private Collider2D m_CrouchDisableCollider;                // A collider that will be disabled when crouching
     [SerializeField] private float m_dashForce = 400f;
@@ -18,7 +18,7 @@ public class CharacterController2D : MonoBehaviour
 
     const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
 	private bool m_Grounded;            // Whether or not the player is grounded.
-	private bool m_Walled;              // om playeren er mod en væg eller ik
+	private bool m_Walled;              // om playeren er mod en vï¿½g eller ik
 	const float k_WalledRadius = .2f;	// radius til en overlapping circle til at tjekke om man er walled
 	const float k_CeilingRadius = .2f; // Radius of the overlap circle to determine if the player can stand up
 	private Rigidbody2D m_Rigidbody2D;
@@ -76,13 +76,13 @@ public class CharacterController2D : MonoBehaviour
 			}
 		}
 
-        Collider2D[] WallColis = Physics2D.OverlapCircleAll(m_WallCheck.position, k_WalledRadius, m_WhatIsGround); //samme check om ground men for væg
+        Collider2D[] WallColis = Physics2D.OverlapCircleAll(m_WallCheck.position, k_WalledRadius, m_WhatIsGround); //samme check om ground men for vï¿½g
         for (int i = 0; i < WallColis.Length; i++)
         {
             if (WallColis[i].gameObject != gameObject)
             {
                 m_Walled = true;
-				if (m_Rigidbody2D.velocity.y < 0) //tilføjet sætning så man falder langsommere når man står op ad en væg
+				if (m_Rigidbody2D.velocity.y < 0) //tilfï¿½jet sï¿½tning sï¿½ man falder langsommere nï¿½r man stï¿½r op ad en vï¿½g
 				{
                     m_Rigidbody2D.gravityScale = 0.5f;
                 }
@@ -163,6 +163,7 @@ public class CharacterController2D : MonoBehaviour
 			}
 		}
 		// If the player should jump...     CHANGE HERE
+
 		if (JumpCount >= 1 && jump && !m_Walled)
 		{
             // Add a vertical force to the player.
@@ -171,25 +172,26 @@ public class CharacterController2D : MonoBehaviour
             JumpCount--;
             m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0); // resetter dens vertikale hastighed
         }
-        if (m_Grounded) //reset dash og jump når man lander
+        if (m_Grounded) //reset dash og jump nï¿½r man lander
 		{
 			DashCount = 1;
 			JumpCount = 2;
 		}
 		if (m_Walled)
+		if (m_Grounded && jump)
 		{
 			DashCount = 1;
 		}
-		if (DashCount >= 1 && Dashing) //starter dash hvis man trykker på dash knappen og dashcount er lig med eller over 1
+		if (DashCount >= 1 && Dashing) //starter dash hvis man trykker pï¿½ dash knappen og dashcount er lig med eller over 1
 		{
-            m_Rigidbody2D.AddForce(new Vector2(m_Rigidbody2D.transform.localScale.x * m_dashForce, 0)); // tilfører en force til playerens rigidbody i retningen den vender pga. flip()
+            m_Rigidbody2D.AddForce(new Vector2(m_Rigidbody2D.transform.localScale.x * m_dashForce, 0)); // tilfï¿½rer en force til playerens rigidbody i retningen den vender pga. flip()
             DashCount--;
         }
-		if (m_Walled && jump && !m_Grounded) //når man er mod en væg og ikke på jorden laver man et wallhop
+		if (m_Walled && jump && !m_Grounded) //nï¿½r man er mod en vï¿½g og ikke pï¿½ jorden laver man et wallhop
 		{
 			m_Rigidbody2D.AddForce(new Vector2(-m_Rigidbody2D.transform.localScale.x * 300f, m_JumpForce));
 		}
-		if (m_Walled && m_Grounded && jump) //man står i et hjørne hopper man normalt
+		if (m_Walled && m_Grounded && jump) //man stï¿½r i et hjï¿½rne hopper man normalt
 		{
             m_Grounded = false;
             m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));

@@ -9,13 +9,13 @@ public class PlayerControls : MonoBehaviour
 
     [SerializeField] private float ActiveFrames = 0.5f;
     [SerializeField] private float AttackSpeed = 3f;
-    [SerializeField] private float runSpeed = 40f; //speed kan ændres efter behov
+    [SerializeField] private float runSpeed = 40f; //speed kan Ã¦ndres efter behov
     [SerializeField] private float DashCooldown = 0.7f;
 
     float Cooldown = 0f;
     float IFrames = 0f;
 
-    //defineret yderst så de kan bruges i fixedupdate
+    //defineret yderst sÃ¥ de kan bruges i fixedupdate
     float horizontalMove = 0f;
     bool jump = false;
     bool crouch;
@@ -28,8 +28,6 @@ public class PlayerControls : MonoBehaviour
 
     private Rigidbody2D enemyRB;
     private Rigidbody2D playerRB;
-    private Collider2D enemyCollider;
-    private Collider2D playerCollider;
     private bool ignore = false;
 
 
@@ -61,9 +59,9 @@ public class PlayerControls : MonoBehaviour
         Cooldown -= Time.deltaTime;
         IFrames -= Time.deltaTime;
 
-        horizontalMove = Input.GetAxisRaw("Horizontal") * runSpeed; //bevæger ens karakter horisontant
+        horizontalMove = Input.GetAxisRaw("Horizontal") * runSpeed; //bevÃ¦ger ens karakter horisontant
 
-        if (Input.GetButtonDown("Jump")) //Får ens karakter til at hoppe
+        if (Input.GetButtonDown("Jump")) //FÃ¥r ens karakter til at hoppe
         {
             jump = true;
         } 
@@ -72,10 +70,11 @@ public class PlayerControls : MonoBehaviour
             playerRB.velocity = new Vector2(playerRB.velocity.x,playerRB.velocity.y * 0.5f);
         }
 
-        if (Input.GetButtonDown("Crouch")) //får ens karakter til at crouch og uncrouch
+        if (Input.GetButtonDown("Crouch")) //fÃ¥r ens karakter til at crouch og uncrouch
         {
             crouch = true;
-        } else if (Input.GetButtonUp("Crouch"))
+        }
+        else if (Input.GetButtonUp("Crouch"))
         {
             crouch = false;
         }
@@ -84,16 +83,17 @@ public class PlayerControls : MonoBehaviour
             Dashing = true;
             DashTimer = DashCooldown;
         }
-        //Når man har Iframes kan man ikke rør en enemy
+        //NÃ¥r man har Iframes kan man ikke rÃ¸r en enemy
         if(IFrames <= 0)
-        if (Input.GetButtonDown("Fire1") && Cooldown <= 0f) //sørger for at man først kan attack efter 3 sek
+        if (Input.GetButtonDown("Fire1") && Cooldown <= 0f) //sÃ¸rger for at man fÃ¸rst kan attack efter 3 sek
         {
-            startAttack(); //kørere startattack metoden
+            startAttack(); //kÃ¸rere startattack metoden
             Cooldown = AttackSpeed; //resetter cooldown til attackspeed
-            Invoke("endAttack", ActiveFrames); //fjerne sværet efter en bestemt mængde tid
+            Invoke("endAttack", ActiveFrames); //fjerne svÃ¦ret efter en bestemt mÃ¦ngde tid
         }
 
-        if (IFrames <= 0) //Når man har Iframes kan man ikke rør en enemy
+        if (IFrames <= 0) //NÃ¥r man har Iframes kan man ikke rÃ¸r en enemy
+        if (IFrames <= 0)
         {
             ignore = false;
         }
@@ -101,11 +101,11 @@ public class PlayerControls : MonoBehaviour
     }
     void startAttack()
     {
-        A_Sword.Invoke(); //invoke kører starter et event, som gør sværet aktivt
+        A_Sword.Invoke(); //invoke kÃ¸rer starter et event, som gÃ¸r svÃ¦ret aktivt
     }
     void endAttack()
     {
-        D_Sword.Invoke(); //starter event, som deaktivere sværet
+        D_Sword.Invoke(); //starter event, som deaktivere svÃ¦ret
     }
     private void FixedUpdate() //lavet i fixedupdate da den opdatere sammen med alle physics calculations
     {
@@ -122,10 +122,10 @@ public class PlayerControls : MonoBehaviour
     //Knockback og Iframes
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        //Hvis man har Iframes kører dette ikke
+        //Hvis man har Iframes kÃ¸rer dette ikke
         if (IFrames <= 0f)
         {
-            //Hvis spilleren rør en "enemy" tager de skade, for Iframs
+            //Hvis spilleren rÃ¸r en "enemy" tager de skade, for Iframs
             if (collision.gameObject.tag == "Enemy")
             {
                 IFrames = 1.5f;
@@ -135,10 +135,14 @@ public class PlayerControls : MonoBehaviour
                 //Henter rigidbodyen af enemyen og playeren
                 enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
 
+
                 playerRB = gameObject.GetComponent<Rigidbody2D>(); 
 
+                playerRB = gameObject.GetComponent<Rigidbody2D>();
 
-                //Laver en normalvektor og scaler den op så spilleren tager knockback
+
+
+                //Laver en normalvektor og scaler den op sÃ¥ spilleren tager knockback
                 Vector2 knockback = new Vector2(enemyRB.position.x - playerRB.position.x, enemyRB.position.y - playerRB.position.y);
                 playerRB.velocity = Vector2.zero;
                 playerRB.AddForce(-knockback * 1000f);
