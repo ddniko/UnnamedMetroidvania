@@ -100,14 +100,15 @@ public class NewPlayerMovement : MonoBehaviour
         }
         else if (LastOnGroundTime < 0 && JumpsLeft == 1)
             JumpsLeft--;
-
+        Debug.Log(_dashesLeft);
         #endregion
 
         if (LastOnGroundTime > 0)
         {
             JumpsLeft = 1;
-        }
             DashedOff = true;
+        }
+
 
 
 
