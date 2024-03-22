@@ -78,6 +78,18 @@ public class PlayerDataWithDash : ScriptableObject
     [Space(5)]
     [Range(0.01f, 0.5f)] public float dashInputBufferTime;
 
+    [Space(20)]
+
+    [Header("Sword")]
+    [Range(0.01f, 2f)] public float AttackSpeed;
+    [Range(0.01f, 0.5f)] public float ActiveFrames;
+
+    [Space(5)]
+    [Range(0.01f, 2f)] public float IFrames;
+    public int PHP = 5;
+    public float KnockbackForce;
+    [Range(1f,20f)] public float SDamage;
+    [Range(0.01f, 2f)] public float knockbackTime;
 
     //Unity Callback, called when the inspector updates
     private void OnValidate()

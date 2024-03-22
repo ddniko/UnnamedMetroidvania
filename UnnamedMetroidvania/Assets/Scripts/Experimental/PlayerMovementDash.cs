@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
+using UnityEngine.SocialPlatforms;
 
 public class NewPlayerMovement : MonoBehaviour
 {
@@ -21,6 +24,7 @@ public class NewPlayerMovement : MonoBehaviour
     public bool IsWallJumping { get; private set; } //man er wallhoppende, hvis man lige har gjort det, og fjerne det igen når timeren er over
     public bool IsDashing { get; private set; } //SKRIV HER
     public bool IsSliding { get; private set; } //SKRIV HER
+
 
     //Timers (also all fields, could be private and a method returning a bool could be used)
     public float LastOnGroundTime { get; private set; } //bliver sat til cayote time når man er på jorden og tæller ned når man forlader
@@ -44,6 +48,14 @@ public class NewPlayerMovement : MonoBehaviour
     private bool _isDashAttacking; //true mens dash
     private float LastDash = 2;
     private bool DashedOff;
+
+    //Combat
+    private float Cooldown;
+    private GameObject Sword;
+    private Rigidbody2D enemyRB;
+    private bool ignore;
+    private float IFramesCD;
+    private bool hit;
 
     #endregion
 
@@ -69,11 +81,13 @@ public class NewPlayerMovement : MonoBehaviour
     #region LAYERS & TAGS
     [Header("Layers & Tags")]
     [SerializeField] private LayerMask _groundLayer;
+    [SerializeField] private LayerMask _enemyCheck;
     #endregion
 
     private void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
+        Sword = this.gameObject.transform.GetChild(2).gameObject;
     }
 
     private void Start()
@@ -90,9 +104,11 @@ public class NewPlayerMovement : MonoBehaviour
         LastOnWallRightTime -= Time.deltaTime;
         LastOnWallLeftTime -= Time.deltaTime;
         LastDash -= Time.deltaTime;
-
+        Cooldown -= Time.deltaTime;
         LastPressedJumpTime -= Time.deltaTime;
         LastPressedDashTime -= Time.deltaTime;
+        IFramesCD -= Time.deltaTime;
+
         if (LastDash < 0 && DashedOff || LastOnWallTime > 0)
         {
             _dashesLeft = 1;
@@ -100,17 +116,24 @@ public class NewPlayerMovement : MonoBehaviour
         }
         else if (LastOnGroundTime < 0 && JumpsLeft == 1)
             JumpsLeft--;
-        Debug.Log(_dashesLeft);
         #endregion
 
+        #region DOUBLE JUMP
         if (LastOnGroundTime > 0)
         {
             JumpsLeft = 1;
             DashedOff = true;
         }
+        #endregion
 
-
-
+        #region SWORD CHECK
+        if (Input.GetButtonDown("Fire1") && Cooldown <= 0f) //Attack efter hvad ens attack speed er
+        {
+            startAttack(); //kørere startattack metoden
+            Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
+            Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
+        }
+        #endregion
 
         #region INPUT HANDLER
         _moveInput.x = Input.GetAxisRaw("Horizontal");
@@ -157,6 +180,10 @@ public class NewPlayerMovement : MonoBehaviour
             //Two checks needed for both left and right walls since whenever the play turns the wall checkPoints swap sides
             LastOnWallTime = Mathf.Max(LastOnWallLeftTime, LastOnWallRightTime);
         }
+        /*if (Physics2D.OverlapBox(_frontWallCheckPoint.position, _wallCheckSize, 0, _enemyCheck))
+        {
+            hit = true;
+        }*/
         #endregion
 
         #region JUMP CHECKS
@@ -209,15 +236,15 @@ public class NewPlayerMovement : MonoBehaviour
         #endregion
 
         #region DASH CHECKS
-        if (CanDash() && LastPressedDashTime > 0) //dasher hvis man kan
+        if (CanDash() && LastPressedDashTime > 0 && _dashesLeft >= 0) //dasher hvis man kan
         {
             //Freeze game for split second. Adds juiciness and a bit of forgiveness over directional input
             Sleep(Data.dashSleepTime);
 
             //If not direction pressed, dash forward
-            if (_moveInput != Vector2.zero)
-                _lastDashDir = _moveInput;
-            else
+           // if (_moveInput != Vector2.zero)  UDKOMMENTERE, da det giver et 8D dash
+             //   _lastDashDir = _moveInput;
+           // else
                 _lastDashDir = IsFacingRight ? Vector2.right : Vector2.left;
 
 
@@ -225,18 +252,24 @@ public class NewPlayerMovement : MonoBehaviour
             IsJumping = false;
             IsWallJumping = false;
             _isJumpCut = false;
+            _dashesLeft--;
+            LastDash = Data.dashRefillTime;
 
             StartCoroutine(nameof(StartDash), _lastDashDir);
         }
         #endregion
+
         #region SLIDE CHECKS 
         if (CanSlide() && ((LastOnWallLeftTime > 0 && _moveInput.x < 0) || (LastOnWallRightTime > 0 && _moveInput.x > 0))) //hvis man har været på en væg i lang nok tid uden at bevæge sig, begge sider. Wallcling sætter sig fast på en væg
+        {
+            JumpsLeft = 1;
             IsSliding = true;
+        }
         else
             IsSliding = false;
         #endregion
 
-        #region GRAVITY //
+        #region GRAVITY 
         if (!_isDashAttacking) 
         {
             //Higher gravity if we've released the jump input or are falling
@@ -280,10 +313,20 @@ public class NewPlayerMovement : MonoBehaviour
             SetGravityScale(0);
         }
         #endregion
+
+        #region IFRAMES
+        if (IFramesCD <= 0)
+        {
+            ignore = false;
+        }
+        Physics2D.IgnoreLayerCollision(7, 8, ignore); //ignorere collision, mellem lag 7 og 8 som er player og enemy
+        #endregion
+
     }
 
     private void FixedUpdate()
     {
+        #region LERP
         //Handle Run
         if (!IsDashing)
         {
@@ -300,6 +343,22 @@ public class NewPlayerMovement : MonoBehaviour
         //Handle Slide
         if (IsSliding) //starter slide
             Slide();
+        #endregion
+
+        #region KNOCKBACK
+        /*if (hit)
+        {
+            //Laver en normalvektor og scaler den op så spilleren tager knockback
+            Vector2 dir = new Vector2(enemyRB.position.x - RB.position.x, enemyRB.position.y - RB.position.y);
+            Vector2 force = new Vector2(dir.normalized.x, dir.normalized.y * (Data.runMaxSpeed / Data.maxFallSpeed));
+            Debug.Log(dir);
+            Debug.Log(force);
+            //RB.velocity = Vector2.zero;
+            //RB.AddForce(-dir.normalized * Data.KnockbackForce, ForceMode2D.Impulse);
+            RB.AddForce(-force * Data.KnockbackForce, ForceMode2D.Impulse);
+            hit = false
+        }*/
+        #endregion
     }
 
     #region INPUT CALLBACKS
@@ -417,13 +476,15 @@ public class NewPlayerMovement : MonoBehaviour
         LastPressedJumpTime = 0;
         LastOnGroundTime = 0; //resetter buffer og cayote timer
         JumpsLeft--;
+
         #region Perform Jump
         //We increase the force applied if we are falling
         //This means we'll always feel like we jump the same amount 
         //(setting the player's Y velocity to 0 beforehand will likely work the same, but I find this more elegant :D)
         float force = Data.jumpForce;
-        if (RB.velocity.y < 0)
-            force -= RB.velocity.y;
+        //if (RB.velocity.y < 0)
+        //  force -= RB.velocity.y;
+        RB.velocity = new Vector2(RB.velocity.x, 0);
 
         RB.AddForce(Vector2.up * force, ForceMode2D.Impulse);
         #endregion
@@ -460,27 +521,30 @@ public class NewPlayerMovement : MonoBehaviour
     {
         //Overall this method of dashing aims to mimic Celeste, if you're looking for
         // a more physics-based approach try a method similar to that used in the jump
-
+        hit = false;
         LastOnGroundTime = 0;
         LastPressedDashTime = 0; //reset Dash buffer og coyotetimer
 
         float startTime = Time.time;
+        float noHit = Time.time;
 
         _dashesLeft--;
         _isDashAttacking = true;
-        LastDash = Data.dashRefillTime;
 
         SetGravityScale(0);
 
         //We keep the player's velocity at the dash speed during the "attack" phase (in celeste the first 0.15s)
-        while (Time.time - startTime <= Data.dashAttackTime)
+        while (Time.time - startTime <= Data.dashAttackTime && !hit)
         {
             RB.velocity = dir.normalized * Data.dashSpeed;
             //Pauses the loop until the next frame, creating something of a Update loop. 
             //This is a cleaner implementation opposed to multiple timers and this coroutine approach is actually what is used in Celeste :D
             yield return null;
         }
-
+        /*if (noHit == Data.dashAttackTime)
+        {
+            hit = false;
+        }*/
         startTime = Time.time;
 
         _isDashAttacking = false;
@@ -496,16 +560,6 @@ public class NewPlayerMovement : MonoBehaviour
 
         //Dash over
         IsDashing = false;
-    }
-
-    //Short period before the player is able to dash again
-    private IEnumerator RefillDash(int amount) //amount aldrig brugt? useless
-    {
-        //SHoet cooldown, so we can't constantly dash along the ground, again this is the implementation in Celeste, feel free to change it up
-        _dashRefilling = true;
-        yield return new WaitForSeconds(Data.dashRefillTime);
-        _dashRefilling = false;
-        _dashesLeft = Mathf.Min(Data.dashAmount, _dashesLeft + 1);
     }
     #endregion
 
@@ -526,7 +580,6 @@ public class NewPlayerMovement : MonoBehaviour
     }
     #endregion
 
-
     #region CHECK METHODS
     public void CheckDirectionToFace(bool isMovingRight)
     {
@@ -536,7 +589,7 @@ public class NewPlayerMovement : MonoBehaviour
 
     private bool CanJump()
     {
-        return JumpsLeft >= 0 && !IsJumping;
+        return JumpsLeft >= 0 && !IsJumping && !IsSliding;
     }
 
     private bool CanWallJump()
@@ -574,7 +627,6 @@ public class NewPlayerMovement : MonoBehaviour
     }
     #endregion
 
-
     #region EDITOR METHODS
     private void OnDrawGizmosSelected()
     {
@@ -585,4 +637,47 @@ public class NewPlayerMovement : MonoBehaviour
         Gizmos.DrawWireCube(_backWallCheckPoint.position, _wallCheckSize);
     }
     #endregion
+
+    #region SWORD METHOD
+    void startAttack()
+    {
+        //A_Sword.Invoke(); //invoke kører starter et event, som gør sværet aktivt
+        Sword.SetActive(true);
+    }
+    void endAttack()
+    {
+        //D_Sword.Invoke(); //starter event, som deaktivere sværet
+        Sword.SetActive(false);
+    }
+    #endregion
+
+    #region KNOCKBACK CHECK
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
+        //Hvis man har Iframes kører dette ikke
+        if (IFramesCD <= 0f)
+        {
+            //Hvis spilleren rør en "enemy" tager de skade og får invincivility frames
+            if (collision.gameObject.tag == "Enemy")
+            {
+                //Debug.Log("Hit");
+                hit = true;
+                RB.velocity = Vector2.zero;
+                //Laver en normalvektor og scaler den op så spilleren tager knockback
+                Vector2 dir = new Vector2(enemyRB.position.x - RB.position.x, enemyRB.position.y - RB.position.y);
+                Vector2 force = new Vector2(dir.normalized.x, dir.normalized.y * (Data.runMaxSpeed / Data.maxFallSpeed));
+                //RB.velocity = Vector2.zero;
+                //RB.AddForce(-dir.normalized * Data.KnockbackForce, ForceMode2D.Impulse);
+                RB.AddForce(-force * Data.KnockbackForce, ForceMode2D.Impulse);
+                //StartCoroutine(nameof(StartDash), -dir);
+
+                //starter i frames
+                Data.PHP--;
+                IFramesCD = Data.IFrames;
+                ignore = true;
+            }
+        }
+    }
+    #endregion 
 }

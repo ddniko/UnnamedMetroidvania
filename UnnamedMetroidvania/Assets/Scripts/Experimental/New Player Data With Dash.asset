@@ -51,3 +51,10 @@ MonoBehaviour:
   dashEndRunLerp: 1
   dashRefillTime: 0.4
   dashInputBufferTime: 0.05
+  AttackSpeed: 0.541
+  ActiveFrames: 0.1
+  IFrames: 1.5
+  PHP: -213
+  KnockbackForce: 50
+  SDamage: 8.19
+  knockbackTime: 1

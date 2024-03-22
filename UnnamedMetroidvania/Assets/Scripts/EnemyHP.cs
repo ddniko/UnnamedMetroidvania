@@ -6,14 +6,13 @@ using UnityEngine.Events;
 public class EnemyHP : MonoBehaviour
 {
     public float EHP = 3f;
-    public Collider2D Sword;
-    public PlayerControls Player;
+    public PlayerDataWithDash Data;
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision == Sword)
+        if (collision.tag == "Sword")
         {
-            EHP -= Player.MDamage;
+            EHP -= Data.SDamage;
         }
     }
 
