@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using Cinemachine;
 
 public class CharacterController2D : MonoBehaviour
 {
@@ -22,7 +23,7 @@ public class CharacterController2D : MonoBehaviour
 	const float k_WalledRadius = .2f;	// radius til en overlapping circle til at tjekke om man er walled
 	const float k_CeilingRadius = .2f; // Radius of the overlap circle to determine if the player can stand up
 	private Rigidbody2D m_Rigidbody2D;
-	private bool m_FacingRight = true;  // For determining which way the player is currently facing.
+	public bool m_FacingRight = true;  // For determining which way the player is currently facing.
 	private Vector3 m_Velocity = Vector3.zero;
 	private int DashCount;
 	private int JumpCount;
@@ -39,7 +40,38 @@ public class CharacterController2D : MonoBehaviour
 	public BoolEvent OnCrouchEvent;
 	private bool m_wasCrouching = false;
 
-	private void Awake()
+    #region Camera
+    [Header("Camera Stuff")]
+	[SerializeField] private GameObject _cameraFollowGO;
+	private CameraFollowingObject _cameraFollowObject;
+	private float _fallSpeedYDampingChangeThreshold;
+
+	private void Start()
+    {
+		_cameraFollowObject = _cameraFollowGO.GetComponent<CameraFollowingObject>();
+		_fallSpeedYDampingChangeThreshold = CameraManager.instance._fallSpeedYDampingChangeThreshold;
+	}
+
+    private void Update()
+    {
+		//Hvis spiller falder hurtigere end _fallSpeedYDampingChangeThreshold, bliver LerpYDamping sat til sand
+		if (m_Rigidbody2D.velocity.y < _fallSpeedYDampingChangeThreshold && !CameraManager.instance.IsLerpingYDamping && !CameraManager.instance.LerpedFromPlayerFalling)
+        {
+			CameraManager.instance.LerpYDamping(true);
+        }
+
+		//Hvis spilleren står stille eller går op af, kører dette
+		if (m_Rigidbody2D.velocity.y >= 0f && !CameraManager.instance.IsLerpingYDamping && CameraManager.instance.LerpedFromPlayerFalling)
+        {
+			CameraManager.instance.LerpedFromPlayerFalling = false;
+
+			CameraManager.instance.LerpYDamping(false);
+        }
+    }
+
+    #endregion
+    #region IDC
+    private void Awake()
 	{
 		m_Rigidbody2D = GetComponent<Rigidbody2D>();
 
@@ -162,8 +194,12 @@ public class CharacterController2D : MonoBehaviour
 				Flip();
 			}
 		}
+<<<<<<< Updated upstream
 		// If the player should jump...     CHANGE HERE
 
+=======
+		// If the player should jump...
+>>>>>>> Stashed changes
 		if (JumpCount >= 1 && jump && !m_Walled)
 		{
             // Add a vertical force to the player.
@@ -199,9 +235,9 @@ public class CharacterController2D : MonoBehaviour
             m_Rigidbody2D.velocity = new Vector2(m_Rigidbody2D.velocity.x, 0);
         }
 	}
+    #endregion
 
-
-	public void Flip()
+    public void Flip()
 	{
 		// Switch the way the player is labelled as facing.
 		m_FacingRight = !m_FacingRight;
@@ -210,5 +246,10 @@ public class CharacterController2D : MonoBehaviour
 		Vector3 theScale = transform.localScale;
 		theScale.x *= -1;
 		transform.localScale = theScale;
-	}
+
+        #region MoreCameraStuff
+        //Kalder på "Camera Following Object" script CallTurn funktion
+        _cameraFollowObject.CallTurn();
+        #endregion
+    }
 }
