@@ -194,12 +194,9 @@ public class CharacterController2D : MonoBehaviour
 				Flip();
 			}
 		}
-<<<<<<< Updated upstream
 		// If the player should jump...     CHANGE HERE
 
-=======
 		// If the player should jump...
->>>>>>> Stashed changes
 		if (JumpCount >= 1 && jump && !m_Walled)
 		{
             // Add a vertical force to the player.
