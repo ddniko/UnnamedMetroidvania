@@ -9,6 +9,9 @@ public class LevelLoader : MonoBehaviour
     public Animator transitionCircleWipeRightToLeft;
     public Animator transitionCircleWipeLeftToRight;
 
+    public GameObject[] EnemyLeft;
+    public GameObject[] EnemyRight;
+
     public float transitionTime = 1f;
     public float transitionWarp = 5f;
 
@@ -25,11 +28,23 @@ public class LevelLoader : MonoBehaviour
     {
         if (collision.CompareTag("Player") && Player.velocity.x > 0)
         {
+            for (int i = 0; i < EnemyLeft.Length; i++)
+            {
+                EnemyLeft[i].SetActive(false);
+                EnemyRight[i].SetActive(true);
+            }
+
             StartCoroutine(LoadLevelRightToLeft());
         }
 
         if (collision.CompareTag("Player") && Player.velocity.x < 0)
         {
+            for (int i = 0; i < EnemyLeft.Length; i++)
+            {
+                EnemyLeft[i].SetActive(true);
+                EnemyRight[i].SetActive(false);
+            }
+
             StartCoroutine(LoadLevelLeftToRight());
         }
     }

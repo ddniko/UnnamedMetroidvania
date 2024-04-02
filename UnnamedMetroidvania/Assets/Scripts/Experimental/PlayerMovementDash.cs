@@ -84,6 +84,13 @@ public class NewPlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask _enemyCheck;
     #endregion
 
+    #region Camera Components
+    [Header("Camera Stuff")]
+    [SerializeField] private GameObject _cameraFollowGO;
+    private CameraFollowingObject _cameraFollowObject;
+    private float _fallSpeedYDampingChangeThreshold;
+    #endregion
+
     private void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
@@ -94,6 +101,9 @@ public class NewPlayerMovement : MonoBehaviour
     {
         SetGravityScale(Data.gravityScale);
         IsFacingRight = true;
+
+        _cameraFollowObject = _cameraFollowGO.GetComponent<CameraFollowingObject>();
+        _fallSpeedYDampingChangeThreshold = CameraManager.instance._fallSpeedYDampingChangeThreshold;
     }
 
     private void Update()
@@ -322,6 +332,21 @@ public class NewPlayerMovement : MonoBehaviour
         Physics2D.IgnoreLayerCollision(7, 8, ignore); //ignorere collision, mellem lag 7 og 8 som er player og enemy
         #endregion
 
+        #region Camera Fall Stuff
+        //Hvis spiller falder hurtigere end _fallSpeedYDampingChangeThreshold, bliver LerpYDamping sat til sand
+        if (RB.velocity.y < _fallSpeedYDampingChangeThreshold && !CameraManager.instance.IsLerpingYDamping && !CameraManager.instance.LerpedFromPlayerFalling)
+        {
+            CameraManager.instance.LerpYDamping(true);
+        }
+
+        //Hvis spilleren står stille eller går op af, kører dette
+        if (RB.velocity.y >= 0f && !CameraManager.instance.IsLerpingYDamping && CameraManager.instance.LerpedFromPlayerFalling)
+        {
+            CameraManager.instance.LerpedFromPlayerFalling = false;
+
+            CameraManager.instance.LerpYDamping(false);
+        }
+        #endregion
     }
 
     private void FixedUpdate()
@@ -465,7 +490,12 @@ public class NewPlayerMovement : MonoBehaviour
         scale.x *= -1;
         transform.localScale = scale;
 
-        IsFacingRight = !IsFacingRight;
+        IsFacingRight = !IsFacingRight;        
+
+        #region MoreCameraStuff
+        //Kalder på "Camera Following Object" script CallTurn funktion
+        _cameraFollowObject.CallTurn();
+        #endregion
     }
     #endregion
 

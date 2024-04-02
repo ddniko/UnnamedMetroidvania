@@ -74,11 +74,11 @@ public class CameraFollowingObject : MonoBehaviour
         //Bestemmer hvordan den skal dreje rundt
         if (_isFacingRight)
         {
-            return 180f;
+            return 0f;
         }
         else
         {
-            return 0f;
+            return 180f;
         }
     }
 }
