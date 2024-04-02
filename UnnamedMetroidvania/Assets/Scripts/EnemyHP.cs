@@ -7,6 +7,12 @@ public class EnemyHP : MonoBehaviour
 {
     public float EHP = 3f;
     public PlayerDataWithDash Data;
+    private float EnemyHitPoint;
+
+    private void Start()
+    {
+        EnemyHitPoint = EHP;
+    }
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
@@ -21,7 +27,9 @@ public class EnemyHP : MonoBehaviour
         if (EHP <= 0)
         {
             Debug.Log("am dead now");
-            GameObject.Destroy(gameObject);
+            this.gameObject.SetActive(false);
+
+            EHP = EnemyHitPoint;
         }
     }
 }

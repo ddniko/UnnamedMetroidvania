@@ -83,7 +83,7 @@ public class PlayerControls : MonoBehaviour
             Dashing = true;
             DashTimer = DashCooldown;
         }
-        //Når man har Iframes kan man ikke rør en enemy
+        //N�r man har Iframes kan man ikke rør en enemy
         if(IFrames <= 0)
         if (Input.GetButtonDown("Fire1") && Cooldown <= 0f) //sørger for at man først kan attack efter 3 sek
         //N�r man har Iframes kan man ikke r�r en enemy
@@ -138,7 +138,6 @@ public class PlayerControls : MonoBehaviour
                 //Henter rigidbodyen af enemyen og playeren
                 enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
                 playerRB = gameObject.GetComponent<Rigidbody2D>(); 
-
                 //Laver en normalvektor og scaler den op så spilleren tager knockback
                 Vector2 knockback = new Vector2(enemyRB.position.x - playerRB.position.x, enemyRB.position.y - playerRB.position.y);
                 playerRB.velocity = Vector2.zero;
