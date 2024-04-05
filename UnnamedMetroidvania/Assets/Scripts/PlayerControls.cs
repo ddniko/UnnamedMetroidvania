@@ -138,8 +138,6 @@ public class PlayerControls : MonoBehaviour
                 //Henter rigidbodyen af enemyen og playeren
                 enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
                 playerRB = gameObject.GetComponent<Rigidbody2D>(); 
-
-
                 //Laver en normalvektor og scaler den op så spilleren tager knockback
                 Vector2 knockback = new Vector2(enemyRB.position.x - playerRB.position.x, enemyRB.position.y - playerRB.position.y);
                 playerRB.velocity = Vector2.zero;
