@@ -56,6 +56,12 @@ public class NewPlayerMovement : MonoBehaviour
     private bool ignore;
     private float IFramesCD;
     private bool hit;
+    public int PHP;
+    public int MP;
+    public int MaxMP;
+
+    //Magic WIP
+    public int MPCost;
 
     #endregion
 
@@ -104,6 +110,9 @@ public class NewPlayerMovement : MonoBehaviour
 
         _cameraFollowObject = _cameraFollowGO.GetComponent<CameraFollowingObject>();
         _fallSpeedYDampingChangeThreshold = CameraManager.instance._fallSpeedYDampingChangeThreshold;
+        PHP = Data.PHP;
+        MaxMP = Data.MP;
+        MP = MaxMP;
     }
 
     private void Update()
@@ -166,6 +175,12 @@ public class NewPlayerMovement : MonoBehaviour
         {
             OnDashInput(); //starter buffer
         }
+        if (Input.GetKeyDown(KeyCode.F)) //tjekker input for magi
+        {
+            MagicMethod(MPCost); //starter buffer
+        }
+
+
         #endregion
 
         #region COLLISION CHECKS
@@ -346,6 +361,15 @@ public class NewPlayerMovement : MonoBehaviour
 
             CameraManager.instance.LerpYDamping(false);
         }
+        #endregion
+
+        #region PlayerHP //WIP
+        //Tjekker om spilleren dør
+        if (PHP <= 0)
+        {
+            Debug.Log("I'm too young to die...");
+        }
+
         #endregion
     }
 
@@ -681,6 +705,18 @@ public class NewPlayerMovement : MonoBehaviour
     }
     #endregion
 
+    #region Magic Method
+    private void MagicMethod(int MPCost)
+    {
+        if (MP >= MPCost)
+        {
+            Debug.Log("Fireball!");
+            MP -= MPCost;
+        }
+    }
+
+    #endregion
+
     #region KNOCKBACK CHECK
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -703,7 +739,7 @@ public class NewPlayerMovement : MonoBehaviour
                 //StartCoroutine(nameof(StartDash), -dir);
 
                 //starter i frames
-                Data.PHP--;
+                PHP--;
                 IFramesCD = Data.IFrames;
                 ignore = true;
             }

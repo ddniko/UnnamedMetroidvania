@@ -7,6 +7,7 @@ public class EnemyHP : MonoBehaviour
 {
     public float EHP = 3f;
     public PlayerDataWithDash Data;
+    public NewPlayerMovement PlayerData;
     private float EnemyHitPoint;
 
     private void Start()
@@ -19,6 +20,14 @@ public class EnemyHP : MonoBehaviour
         if (collision.tag == "Sword")
         {
             EHP -= Data.SDamage;
+            if (PlayerData.MP < PlayerData.MaxMP)
+            {
+                PlayerData.MP += 2;
+                if (PlayerData.MP >= PlayerData.MaxMP)
+                {
+                    PlayerData.MP = PlayerData.MaxMP;
+                }
+            }
         }
     }
 

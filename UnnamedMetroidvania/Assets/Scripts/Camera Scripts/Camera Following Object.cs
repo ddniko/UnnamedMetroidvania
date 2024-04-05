@@ -14,7 +14,7 @@ public class CameraFollowingObject : MonoBehaviour
 
     private Coroutine _turnCoroutine;
 
-    private CharacterController2D _player; //Playerens controls
+    private NewPlayerMovement _player; //Playerens controls
 
     private bool _isFacingRight;
 
@@ -22,10 +22,10 @@ public class CameraFollowingObject : MonoBehaviour
     private void Awake()
     {
         //Henter transform af gameobject referrencen
-        _player = _playerTransform.gameObject.GetComponent<CharacterController2D>();
+        _player = _playerTransform.gameObject.GetComponent<NewPlayerMovement>();
 
         //Henter variablen der beskriver om spilleren vender mod højre
-        _isFacingRight = _player.m_FacingRight; //_player scripts FacingRight variabel
+        _isFacingRight = _player.IsFacingRight; //_player scripts FacingRight variabel
     }
 
     private void Update()
@@ -74,11 +74,11 @@ public class CameraFollowingObject : MonoBehaviour
         //Bestemmer hvordan den skal dreje rundt
         if (_isFacingRight)
         {
-            return 0f;
+            return 180f;
         }
         else
         {
-            return 180f;
+            return 0f;
         }
     }
 }
