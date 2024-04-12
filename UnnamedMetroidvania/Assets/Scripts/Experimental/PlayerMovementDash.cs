@@ -13,6 +13,9 @@ public class NewPlayerMovement : MonoBehaviour
 
     #region COMPONENTS
     public Rigidbody2D RB { get; private set; }
+    [SerializeField] private GameObject Arrow;
+    private GameObject inst;
+    private GameObject PlayerCenter;
     #endregion
 
     #region STATE PARAMETERS
@@ -59,9 +62,20 @@ public class NewPlayerMovement : MonoBehaviour
     public int PHP;
     public int MP;
     public int MaxMP;
+    private bool WeaponSwap;
 
     //Magic WIP
     public int MPCost;
+
+    //Bow
+    private GameObject bow;
+    private bool Release;
+    [SerializeField] private Transform ArrowSpawn;
+    private float TimeHeld;
+    private Rigidbody2D ArrowRB;
+    private float gravityDropoff;
+    private bool Drop;
+    private float ArrowPower;
 
     #endregion
 
@@ -101,12 +115,15 @@ public class NewPlayerMovement : MonoBehaviour
     {
         RB = GetComponent<Rigidbody2D>();
         Sword = this.gameObject.transform.GetChild(2).gameObject;
+        bow = this.gameObject.transform.GetChild(3).gameObject;
+        PlayerCenter = this.gameObject.transform.GetChild(6).gameObject;
     }
 
     private void Start()
     {
         SetGravityScale(Data.gravityScale);
         IsFacingRight = true;
+        ArrowRB = Arrow.GetComponent<Rigidbody2D>();
 
         _cameraFollowObject = _cameraFollowGO.GetComponent<CameraFollowingObject>();
         _fallSpeedYDampingChangeThreshold = CameraManager.instance._fallSpeedYDampingChangeThreshold;
@@ -127,6 +144,8 @@ public class NewPlayerMovement : MonoBehaviour
         LastPressedJumpTime -= Time.deltaTime;
         LastPressedDashTime -= Time.deltaTime;
         IFramesCD -= Time.deltaTime;
+        TimeHeld += Time.deltaTime;
+        gravityDropoff += Time.deltaTime;
 
         if (LastDash < 0 && DashedOff || LastOnWallTime > 0)
         {
@@ -142,15 +161,6 @@ public class NewPlayerMovement : MonoBehaviour
         {
             JumpsLeft = 1;
             DashedOff = true;
-        }
-        #endregion
-
-        #region SWORD CHECK
-        if (Input.GetButtonDown("Fire1") && Cooldown <= 0f) //Attack efter hvad ens attack speed er
-        {
-            startAttack(); //kørere startattack metoden
-            Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
-            Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
         }
         #endregion
 
@@ -175,12 +185,54 @@ public class NewPlayerMovement : MonoBehaviour
         {
             OnDashInput(); //starter buffer
         }
+
         if (Input.GetKeyDown(KeyCode.F)) //tjekker input for magi
         {
             MagicMethod(MPCost); //starter buffer
         }
 
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            WeaponSwap = !WeaponSwap;
+        }
 
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            Release = false;
+            TimeHeld = 0;
+            ShootBow(); //animation start
+        }
+
+        if (Input.GetKeyUp(KeyCode.V))
+        {
+            Release = true;
+            ShootBow();
+        }
+
+            #endregion
+
+        #region SWORD CHECK
+        if (Input.GetButtonDown("Fire1") && Cooldown <= 0f && WeaponSwap) //Attack efter hvad ens attack speed er
+        {
+            startAttack(); //kørere startattack metoden
+            Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
+            Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
+        }
+        #endregion
+
+        #region BOW CHECK
+        if (!WeaponSwap)
+        {
+            bow.SetActive(true);
+        }
+        else
+        {
+            bow.SetActive(false);
+        }
+        if (_moveInput.y != 0)
+        {
+            DiagonalBow();
+        }
         #endregion
 
         #region COLLISION CHECKS
@@ -347,7 +399,7 @@ public class NewPlayerMovement : MonoBehaviour
         Physics2D.IgnoreLayerCollision(7, 8, ignore); //ignorere collision, mellem lag 7 og 8 som er player og enemy
         #endregion
 
-        #region Camera Fall Stuff
+        #region CAMERA FALL
         //Hvis spiller falder hurtigere end _fallSpeedYDampingChangeThreshold, bliver LerpYDamping sat til sand
         if (RB.velocity.y < _fallSpeedYDampingChangeThreshold && !CameraManager.instance.IsLerpingYDamping && !CameraManager.instance.LerpedFromPlayerFalling)
         {
@@ -363,7 +415,7 @@ public class NewPlayerMovement : MonoBehaviour
         }
         #endregion
 
-        #region PlayerHP //WIP
+        #region PLAYER HP //WIP
         //Tjekker om spilleren dør
         if (PHP <= 0)
         {
@@ -705,7 +757,7 @@ public class NewPlayerMovement : MonoBehaviour
     }
     #endregion
 
-    #region Magic Method
+    #region MAGIC METHOD
     private void MagicMethod(int MPCost)
     {
         if (MP >= MPCost)
@@ -745,5 +797,69 @@ public class NewPlayerMovement : MonoBehaviour
             }
         }
     }
-    #endregion 
+    #endregion
+
+    #region BOW METHOD
+    void ShootBow()
+    {
+        if (!Release && !WeaponSwap)
+        {
+            //start animation?!?!?
+        }
+        else if (Release && !WeaponSwap)
+        {
+            if (TimeHeld > Data.FullChargeTime)
+                TimeHeld = Data.FullChargeTime;
+
+            if (TimeHeld < Data.MinimumCharge)
+                TimeHeld = 0f;
+
+            ArrowPower = Data.ArrowSpeed * (TimeHeld / Data.FullChargeTime);
+            if (ArrowPower > 0)
+            {
+                gravityDropoff = 0;
+                if (_moveInput.y != 0)
+                {
+                    StartCoroutine(ShootArrowDiag(ArrowPower));
+                }
+                else
+                    StartCoroutine(ShootArrowStreight(ArrowPower));
+            }
+        }
+    }
+
+    void DiagonalBow()
+    {
+        if (_moveInput.y < 0)
+        {
+            bow.transform.RotateAround(PlayerCenter.transform.position, Vector3.up, 45);
+        }
+        else
+        {
+            bow.transform.RotateAround(PlayerCenter.transform.position, Vector3.up, -45);
+        }
+    }
+
+    IEnumerator ShootArrowStreight(float strenght) //iEnumerator til at skyde streight
+    {
+        inst = Instantiate(Arrow, ArrowSpawn.position, bow.transform.rotation);
+        Rigidbody2D instRB = inst.GetComponent<Rigidbody2D>();
+        instRB.velocity = transform.right * strenght * (RB.transform.localScale.x / Mathf.Abs(RB.transform.localScale.x));
+
+        instRB.gravityScale = 0;
+        yield return new WaitForSeconds(Data.TimeBeforeGravity);
+        instRB.gravityScale = Data.ArrowGravity;
+    }
+    IEnumerator ShootArrowDiag(float strenght) //iEnumerator til at skyde diagonalt
+    {
+        inst = Instantiate(Arrow, ArrowSpawn.position, bow.transform.rotation);
+        Rigidbody2D instRB = inst.GetComponent<Rigidbody2D>();
+        Vector2 ArrowDir = new Vector2(1 * (RB.transform.localScale.x / Mathf.Abs(RB.transform.localScale.x)), _moveInput.y); //en vector som skyder den retning man kigger fundet ved x-scale og skyder diagonalt hvis up eller down er holdt
+        instRB.velocity = ArrowDir.normalized * strenght;
+
+        instRB.gravityScale = 0;
+        yield return new WaitForSeconds(Data.TimeBeforeGravity);
+        instRB.gravityScale = Data.ArrowGravity;
+    }
+    #endregion
 }

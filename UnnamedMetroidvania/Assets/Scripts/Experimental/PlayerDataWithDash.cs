@@ -93,6 +93,19 @@ public class PlayerDataWithDash : ScriptableObject
     [Range(1f,20f)] public float SDamage;
     [Range(0.01f, 2f)] public float knockbackTime;
 
+    [Space(20)]
+
+    [Header("Bow")]
+    [Range(1f, 5f)] public float FullChargeTime;
+    [Range(0.01f, 1f)] public float MinimumCharge;
+    [Range(0.5f, 5f)] public float ArrowBaseDamage;
+    [Range(0.1f, 2f)] public float TimeBeforeGravity;
+    [Range(0.5f, 5f)] public float ArrowGravity;
+    [Range(5f, 50f)] public float ArrowSpeed;
+
+
+
+
     //Unity Callback, called when the inspector updates
     private void OnValidate()
     {
