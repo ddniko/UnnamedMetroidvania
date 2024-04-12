@@ -47,7 +47,7 @@ public class EnemyHP : MonoBehaviour
         {
             EHP -= Data.SlamDamage;
             EnemyRB.position = new Vector2(EnemyRB.position.x, EnemyRB.position.y + slamHeight);
-            EnemyRB.constraints = RigidbodyConstraints2D.FreezePositionX;
+            EnemyRB.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
         }
     }
 
