@@ -10,9 +10,17 @@ public class EnemyHP : MonoBehaviour
     public NewPlayerMovement PlayerData;
     private float EnemyHitPoint;
 
+    Rigidbody2D EnemyRB;
+    float ground;
+    public float slamHeight = 5f;
+
+    public int MPRevcory = 5;
+
     private void Start()
     {
         EnemyHitPoint = EHP;
+        EnemyRB = this.gameObject.GetComponent<Rigidbody2D>();
+        ground = EnemyRB.position.y;
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
@@ -22,14 +30,27 @@ public class EnemyHP : MonoBehaviour
             EHP -= Data.SDamage;
             if (PlayerData.MP < PlayerData.MaxMP)
             {
-                PlayerData.MP += 2;
+                PlayerData.MP += MPRevcory;
                 if (PlayerData.MP >= PlayerData.MaxMP)
                 {
                     PlayerData.MP = PlayerData.MaxMP;
                 }
             }
         }
+
+        if (collision.tag == "Fireball")
+        {
+            EHP -= Data.FireballDamage;
+        }
+
+        if (collision.tag == "Slam") //Hvis slammet gå opad
+        {
+            EHP -= Data.SlamDamage;
+            EnemyRB.position = new Vector2(EnemyRB.position.x, EnemyRB.position.y + slamHeight);
+            EnemyRB.constraints = RigidbodyConstraints2D.FreezePositionX;
+        }
     }
+
 
     void Update() //måske fixedupdate
     {
@@ -39,6 +60,11 @@ public class EnemyHP : MonoBehaviour
             this.gameObject.SetActive(false);
 
             EHP = EnemyHitPoint;
+        }
+        if (EnemyRB.position.y <= ground)
+        {
+            EnemyRB.constraints &= ~RigidbodyConstraints2D.FreezePositionX;
+            EnemyRB.constraints = RigidbodyConstraints2D.FreezeRotation;
         }
     }
 }

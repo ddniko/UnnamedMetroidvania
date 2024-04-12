@@ -54,8 +54,13 @@ MonoBehaviour:
   AttackSpeed: 0.541
   ActiveFrames: 0.1
   IFrames: 1.5
-  PHP: 5
-  MP: 100
   KnockbackForce: 50
   SDamage: 8.19
   knockbackTime: 1
+  PHP: 5
+  MP: 100
+  HealCost: 20
+  FireballCost: 10
+  FireballDamage: 5
+  SlamCost: 15
+  SlamDamage: 0

@@ -86,12 +86,21 @@ public class PlayerDataWithDash : ScriptableObject
 
     [Space(5)]
     [Range(0.01f, 2f)] public float IFrames;
-    public int PHP = 5;
-    public int MP = 100;
 
     public float KnockbackForce;
     [Range(1f,20f)] public float SDamage;
     [Range(0.01f, 2f)] public float knockbackTime;
+
+    [Space(20)]
+
+    [Header("Magic")]
+    public int PHP = 5;
+    public int MP = 100;
+    public int HealCost = 20;
+    public int FireballCost = 10;
+    public int FireballDamage = 5;
+    public int SlamCost = 15;
+    public int SlamDamage = 5;
 
     //Unity Callback, called when the inspector updates
     private void OnValidate()
