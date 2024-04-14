@@ -76,6 +76,9 @@ public class NewPlayerMovement : MonoBehaviour
     private float gravityDropoff;
     private bool Drop;
     private float ArrowPower;
+    private GameObject bowStreight;
+    private GameObject bowDiagUp;
+    private GameObject bowDiagDown;
 
     #endregion
 
@@ -117,6 +120,9 @@ public class NewPlayerMovement : MonoBehaviour
         Sword = this.gameObject.transform.GetChild(2).gameObject;
         bow = this.gameObject.transform.GetChild(3).gameObject;
         PlayerCenter = this.gameObject.transform.GetChild(6).gameObject;
+        bowStreight = this.gameObject.transform.GetChild(7).gameObject;
+        bowDiagUp = this.gameObject.transform.GetChild(8).gameObject;
+        bowDiagDown = this.gameObject.transform.GetChild(9).gameObject;
     }
 
     private void Start()
@@ -232,6 +238,11 @@ public class NewPlayerMovement : MonoBehaviour
         if (_moveInput.y != 0)
         {
             DiagonalBow();
+        }
+        else
+        {
+            bow.transform.position = bowStreight.transform.position;
+            bow.transform.eulerAngles = bowStreight.transform.eulerAngles;
         }
         #endregion
 
@@ -832,11 +843,13 @@ public class NewPlayerMovement : MonoBehaviour
     {
         if (_moveInput.y < 0)
         {
-            bow.transform.RotateAround(PlayerCenter.transform.position, Vector3.up, 45);
+            bow.transform.position = bowDiagDown.transform.position;
+            bow.transform.eulerAngles = bowDiagDown.transform.eulerAngles;
         }
         else
         {
-            bow.transform.RotateAround(PlayerCenter.transform.position, Vector3.up, -45);
+            bow.transform.position = bowDiagUp.transform.position;
+            bow.transform.eulerAngles = bowDiagUp.transform.eulerAngles;
         }
     }
 
@@ -848,7 +861,14 @@ public class NewPlayerMovement : MonoBehaviour
 
         instRB.gravityScale = 0;
         yield return new WaitForSeconds(Data.TimeBeforeGravity);
-        instRB.gravityScale = Data.ArrowGravity;
+        if (inst != null || instRB != null)
+        {
+            instRB.gravityScale = Data.ArrowGravity;
+        }
+        else
+        {
+            yield return null;
+        }
     }
     IEnumerator ShootArrowDiag(float strenght) //iEnumerator til at skyde diagonalt
     {
@@ -859,7 +879,14 @@ public class NewPlayerMovement : MonoBehaviour
 
         instRB.gravityScale = 0;
         yield return new WaitForSeconds(Data.TimeBeforeGravity);
-        instRB.gravityScale = Data.ArrowGravity;
+        if (inst != null || instRB != null)
+        {
+            instRB.gravityScale = Data.ArrowGravity;
+        }
+        else
+        {
+            yield return null;
+        }
     }
     #endregion
 }

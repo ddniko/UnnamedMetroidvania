@@ -29,14 +29,21 @@ public class EnemyHP : MonoBehaviour
                 }
             }
         }
+
+        if (collision.tag == "Arrow")
+        {
+            Rigidbody2D Arrow = collision.GetComponent<Rigidbody2D>();
+            EHP -= Data.ArrowBaseDamage * (Arrow.velocity.magnitude / Data.ArrowSpeed);
+            Destroy(collision.gameObject);
+        }
     }
 
     void Update() //måske fixedupdate
     {
-        if (EHP <= 0)
+        if (EHP <= 0.1f)
         {
             Debug.Log("am dead now");
-            this.gameObject.SetActive(false);
+            gameObject.SetActive(false);
 
             EHP = EnemyHitPoint;
         }
