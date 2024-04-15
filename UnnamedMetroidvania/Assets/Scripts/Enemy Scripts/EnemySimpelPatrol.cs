@@ -10,12 +10,13 @@ public class EnemySimpelPatrol : MonoBehaviour
     private Vector2 dir;
     private Transform currentPoint;
     public float speed = 0.5f;
-    private GameObject GroundCheck;
     [SerializeField] private LayerMask Ground;
-    [SerializeField] private Vector2 _groundCheckSize = new Vector2(0.49f, 0.03f);
     private bool IsGround;
     [SerializeField] private float forceMulti;
     [SerializeField] private float Up;
+    [SerializeField] private float KnockupForce;
+    private bool right;
+    private Vector3 localScale;
 
 
 
@@ -25,8 +26,6 @@ public class EnemySimpelPatrol : MonoBehaviour
         RB = GetComponent<Rigidbody2D>();
         currentPoint = pointB.transform;
         IsGround = true;
-
-        GroundCheck = this.gameObject.transform.GetChild(0).gameObject;
     }
 
     // Update is called once per frame
@@ -44,24 +43,32 @@ public class EnemySimpelPatrol : MonoBehaviour
             {
                 RB.velocity = new Vector2(-speed, 0);
             }
-            //Når enemyen når hen til punktet B, går den imod punktet A
-            if (Vector2.Distance(transform.position, currentPoint.position) < 0.5f && currentPoint == pointB.transform)
+        }
+        //Når enemyen når hen til punktet B, går den imod punktet A
+        if (Vector2.Distance(transform.position, currentPoint.position) < 1.5f && currentPoint == pointB.transform)
+        {
+            if (IsGround)
             {
                 flip();
-                currentPoint = pointA.transform;
             }
-            //Når enemyen når hen til punktet A, går den imod punktet B
-            if (Vector2.Distance(transform.position, currentPoint.position) < 0.5f && currentPoint == pointA.transform)
+            currentPoint = pointA.transform;
+            right = true;
+        }
+        //Når enemyen når hen til punktet A, går den imod punktet B
+        if (Vector2.Distance(transform.position, currentPoint.position) < 1.5f && currentPoint == pointA.transform)
+        {
+            if (IsGround)
             {
                 flip();
-                currentPoint = pointB.transform;
             }
+            currentPoint = pointB.transform;
+            right = false;
         }
     }
     //Vender enemyens x-vinkel ved at gange med -1
     private void flip()
     {
-        Vector3 localScale = transform.localScale;
+        localScale = transform.localScale;
         localScale.x *= -1;
         transform.localScale = localScale;
     }
@@ -69,10 +76,11 @@ public class EnemySimpelPatrol : MonoBehaviour
     //Laver nogle cikler for punkterne A og B, hvor der laves en linje imellem dem
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(pointA.transform.position, 0.5f);
-        Gizmos.DrawWireSphere(pointB.transform.position, 0.5f);
+        Gizmos.DrawWireSphere(pointA.transform.position, 1f);
+        Gizmos.DrawWireSphere(pointB.transform.position, 1f);
         Gizmos.DrawLine(pointA.transform.position, pointB.transform.position);
     }
+    #region KNOCKBACK
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.tag == "Sword")
@@ -83,6 +91,22 @@ public class EnemySimpelPatrol : MonoBehaviour
             RB.AddForce(dir * forceMulti, ForceMode2D.Impulse);
 
         }
+
+        if (collision.tag == "Slam") //Hvis slammet gå opad
+        {
+            IsGround = false;
+            RB.AddForce(Vector2.up * KnockupForce, ForceMode2D.Impulse);
+            //EnemyRB.position = new Vector2(EnemyRB.position.x, EnemyRB.position.y + slamHeight); //ændre til force?
+            RB.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
+        }
+
+        if (collision.tag == "Arrow") //Hvis slammet gå opad
+        {
+            IsGround = false;
+            dir = new Vector2(-Mathf.Sign(collision.transform.position.x - RB.position.x), Up);
+            RB.velocity = Vector2.zero;
+            RB.AddForce(dir * collision.attachedRigidbody.velocity.magnitude / 20f * forceMulti, ForceMode2D.Impulse);
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -90,6 +114,16 @@ public class EnemySimpelPatrol : MonoBehaviour
         if ((Ground.value & (1 << collision.gameObject.layer)) > 0)
         {
             IsGround = true;
+
+            if (right && localScale.x >0)
+            {
+                flip();
+            }
+            else if (!right && localScale.x <0)
+            {
+                flip();
+            }
         }
     }
+    #endregion
 }

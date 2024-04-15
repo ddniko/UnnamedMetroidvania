@@ -138,6 +138,8 @@ public class NewPlayerMovement : MonoBehaviour
         IsFacingRight = true;
         ArrowRB = Arrow.GetComponent<Rigidbody2D>();
 
+        WeaponSwap = true;
+
         _cameraFollowObject = _cameraFollowGO.GetComponent<CameraFollowingObject>();
         _fallSpeedYDampingChangeThreshold = CameraManager.instance._fallSpeedYDampingChangeThreshold;
         MaxPHP = Data.PHP;
@@ -200,6 +202,13 @@ public class NewPlayerMovement : MonoBehaviour
             OnDashInput(); //starter buffer
         }
 
+        if ((Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.LeftControl)) && Cooldown <= 0f && WeaponSwap) //Attack efter hvad ens attack speed er
+        {
+            startAttack(); //kørere startattack metoden
+            Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
+            Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
+        }
+
         if (Input.GetKeyDown(KeyCode.A)) //tjekker input for heal
         {
             HealMagicMethod(Data.HealCost);
@@ -233,14 +242,6 @@ public class NewPlayerMovement : MonoBehaviour
 
             #endregion
 
-        #region SWORD CHECK
-        if (Input.GetButtonDown("Fire1") && Cooldown <= 0f && WeaponSwap) //Attack efter hvad ens attack speed er
-        {
-            startAttack(); //kørere startattack metoden
-            Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
-            Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
-        }
-        #endregion
 
         #region BOW CHECK
         if (!WeaponSwap)

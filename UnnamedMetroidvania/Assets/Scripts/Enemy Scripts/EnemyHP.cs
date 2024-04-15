@@ -19,7 +19,7 @@ public class EnemyHP : MonoBehaviour
     private void Start()
     {
         EnemyHitPoint = EHP;
-        EnemyRB = this.gameObject.GetComponent<Rigidbody2D>();
+        EnemyRB = gameObject.GetComponent<Rigidbody2D>();
         ground = EnemyRB.position.y;
     }
 
@@ -53,8 +53,6 @@ public class EnemyHP : MonoBehaviour
         if (collision.tag == "Slam") //Hvis slammet gå opad
         {
             EHP -= Data.SlamDamage;
-            EnemyRB.position = new Vector2(EnemyRB.position.x, EnemyRB.position.y + slamHeight); //ændre til force?
-            EnemyRB.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
         }
     }
 

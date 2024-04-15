@@ -55,7 +55,7 @@ MonoBehaviour:
   ActiveFrames: 0.1
   IFrames: 1.5
   KnockbackForce: 50
-  SDamage: 8.19
+  SDamage: 1
   knockbackTime: 1
   FullChargeTime: 1
   MinimumCharge: 0.5
@@ -69,4 +69,4 @@ MonoBehaviour:
   FireballCost: 10
   FireballDamage: 5
   SlamCost: 15
-  SlamDamage: 0
+  SlamDamage: 1
