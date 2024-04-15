@@ -5,11 +5,6 @@ using UnityEngine;
 public class Arrow : MonoBehaviour
 {
     [SerializeField] private LayerMask DestroyBullet;
-    void Start()
-    {
-        
-    }
-
     void Update()
     {
         Destroy(gameObject, 3f);

@@ -53,7 +53,7 @@ public class EnemyHP : MonoBehaviour
         if (collision.tag == "Slam") //Hvis slammet gå opad
         {
             EHP -= Data.SlamDamage;
-            EnemyRB.position = new Vector2(EnemyRB.position.x, EnemyRB.position.y + slamHeight);
+            EnemyRB.position = new Vector2(EnemyRB.position.x, EnemyRB.position.y + slamHeight); //ændre til force?
             EnemyRB.constraints = RigidbodyConstraints2D.FreezePositionX | RigidbodyConstraints2D.FreezeRotation;
         }
     }

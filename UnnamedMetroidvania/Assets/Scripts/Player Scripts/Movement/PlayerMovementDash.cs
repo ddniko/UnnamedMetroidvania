@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 using UnityEngine.SocialPlatforms;
+using UnityEngine.EventSystems;
 
 public class NewPlayerMovement : MonoBehaviour
 {
@@ -59,17 +60,17 @@ public class NewPlayerMovement : MonoBehaviour
     private bool ignore;
     private float IFramesCD;
     private bool hit;
-    public int PHP;
-    public int MP;
-    public int MaxMP;
+    [HideInInspector] public int PHP;
+    [HideInInspector] public int MP;
+    [HideInInspector] public int MaxMP;
     private bool WeaponSwap;
 
     //Magic WIP
-    public int MPCost;
-    public int MaxPHP;
+    private int MPCost;
+    [HideInInspector] public int MaxPHP;
     public Fireball FireballRightPrefab;
     public FireballLeft FireballLeftPrefab;
-    public Transform Offset;
+    [HideInInspector] public Transform Offset;
     private GameObject Slam;
 
     //Bow
@@ -128,7 +129,7 @@ public class NewPlayerMovement : MonoBehaviour
         bowStreight = this.gameObject.transform.GetChild(7).gameObject;
         bowDiagUp = this.gameObject.transform.GetChild(8).gameObject;
         bowDiagDown = this.gameObject.transform.GetChild(9).gameObject;
-        Slam = this.gameObject.transform.GetChild(6).gameObject;
+        Slam = this.gameObject.transform.GetChild(11).gameObject;
     }
 
     private void Start()
@@ -199,7 +200,6 @@ public class NewPlayerMovement : MonoBehaviour
             OnDashInput(); //starter buffer
         }
 
-        if (Input.GetKeyDown(KeyCode.F)) //tjekker input for magi
         if (Input.GetKeyDown(KeyCode.A)) //tjekker input for heal
         {
             HealMagicMethod(Data.HealCost);
@@ -423,7 +423,7 @@ public class NewPlayerMovement : MonoBehaviour
         {
             ignore = false;
         }
-        Physics2D.IgnoreLayerCollision(7, 8, ignore); //ignorere collision, mellem lag 7 og 8 som er player og enemy
+        Physics2D.IgnoreLayerCollision(6, 7, ignore); //ignorere collision, mellem lag 7 og 8 som er player og enemy
         #endregion
 
         #region CAMERA FALL
@@ -789,7 +789,7 @@ public class NewPlayerMovement : MonoBehaviour
     private void HealMagicMethod(int MPCost) //Heal
     {
         //har man nok MP og står man på jorden
-        if (MP >= MPCost && PHP < MaxPHP && Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer) && !IsJumping)
+        if (MP >= MPCost && LastOnGroundTime >= 0 /*PHP < MaxPHP && Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer) && !IsJumping*/)
         {
             Debug.Log("Heal!");
             PHP++;
@@ -830,7 +830,7 @@ public class NewPlayerMovement : MonoBehaviour
     private void SlamMagicMethod(int MPCost) //Slam
     {
         //Nok MP og står på jorden
-        if (MP >= MPCost && Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer) && !IsJumping)
+        if (MP >= MPCost && LastOnGroundTime >= 0)
         {
             MP -= MPCost;
             Debug.Log("Slam");
