@@ -103,7 +103,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 20
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -174,6 +174,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EHP: 3
   Data: {fileID: 11400000, guid: ee2fec2e85b65d44d9acb8fb41a39cf8, type: 2}
+  PlayerData: {fileID: 0}
+  slamHeight: 5
+  MPRevcory: 5
 --- !u!114 &5077161003626001221
 MonoBehaviour:
   m_ObjectHideFlags: 0

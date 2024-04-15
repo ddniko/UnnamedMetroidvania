@@ -12,6 +12,6 @@ public class TextManager : MonoBehaviour
 
     private void Update()
     {
-        PlayerDataText.text = $"Lives: {PlayerData.PHP}\nMana: {PlayerData.MP}/{PlayerData.MaxMP}";
+        PlayerDataText.text = $"Lives: {PlayerData.PHP}/{PlayerData.MaxPHP}\nMana: {PlayerData.MP}/{PlayerData.MaxMP}";
     }
 }

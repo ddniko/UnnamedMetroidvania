@@ -66,6 +66,11 @@ public class NewPlayerMovement : MonoBehaviour
 
     //Magic WIP
     public int MPCost;
+    public int MaxPHP;
+    public Fireball FireballRightPrefab;
+    public FireballLeft FireballLeftPrefab;
+    public Transform Offset;
+    private GameObject Slam;
 
     //Bow
     private GameObject bow;
@@ -123,6 +128,7 @@ public class NewPlayerMovement : MonoBehaviour
         bowStreight = this.gameObject.transform.GetChild(7).gameObject;
         bowDiagUp = this.gameObject.transform.GetChild(8).gameObject;
         bowDiagDown = this.gameObject.transform.GetChild(9).gameObject;
+        Slam = this.gameObject.transform.GetChild(6).gameObject;
     }
 
     private void Start()
@@ -133,7 +139,8 @@ public class NewPlayerMovement : MonoBehaviour
 
         _cameraFollowObject = _cameraFollowGO.GetComponent<CameraFollowingObject>();
         _fallSpeedYDampingChangeThreshold = CameraManager.instance._fallSpeedYDampingChangeThreshold;
-        PHP = Data.PHP;
+        MaxPHP = Data.PHP;
+        PHP = MaxPHP;
         MaxMP = Data.MP;
         MP = MaxMP;
     }
@@ -193,8 +200,17 @@ public class NewPlayerMovement : MonoBehaviour
         }
 
         if (Input.GetKeyDown(KeyCode.F)) //tjekker input for magi
+        if (Input.GetKeyDown(KeyCode.A)) //tjekker input for heal
         {
-            MagicMethod(MPCost); //starter buffer
+            HealMagicMethod(Data.HealCost);
+        }
+        if (Input.GetKeyDown(KeyCode.D))  //Tjekker input for fireball
+        {
+            FireballMagicMethod(Data.FireballCost);
+        }
+        if (Input.GetKeyDown(KeyCode.S)) //Tjekker input for slam
+        {
+            SlamMagicMethod(Data.SlamCost);
         }
 
         if (Input.GetKeyDown(KeyCode.Tab))
@@ -456,6 +472,7 @@ public class NewPlayerMovement : MonoBehaviour
         if (IsSliding) //starter slide
             Slide();
         #endregion
+        
 
         #region KNOCKBACK
         /*if (hit)
@@ -769,13 +786,64 @@ public class NewPlayerMovement : MonoBehaviour
     #endregion
 
     #region MAGIC METHOD
-    private void MagicMethod(int MPCost)
+    private void HealMagicMethod(int MPCost) //Heal
+    {
+        //har man nok MP og står man på jorden
+        if (MP >= MPCost && PHP < MaxPHP && Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer) && !IsJumping)
+        {
+            Debug.Log("Heal!");
+            PHP++;
+            MP -= MPCost;
+            //Gøre så spilleren står stille
+            StartCoroutine(Sleep(true));
+        }
+    }
+    private IEnumerator Sleep(bool healing)
+    {
+        while (healing)
+        {
+            RB.constraints = RigidbodyConstraints2D.FreezeAll;
+            yield return new WaitForSecondsRealtime(3);
+            healing = false;
+        }
+        RB.constraints = RigidbodyConstraints2D.None;
+        RB.constraints = RigidbodyConstraints2D.FreezeRotation;
+    }
+
+    private void FireballMagicMethod(int MPCost) //Fireball
     {
         if (MP >= MPCost)
         {
             Debug.Log("Fireball!");
+            if (IsFacingRight) //Skyder højre fireball
+            { 
+                Instantiate(FireballRightPrefab, Offset.position, transform.rotation);
+            }
+            else //Skyder venstre fireball
+            {
+                Instantiate(FireballLeftPrefab, Offset.position, transform.rotation);
+            }
             MP -= MPCost;
         }
+    }
+
+    private void SlamMagicMethod(int MPCost) //Slam
+    {
+        //Nok MP og står på jorden
+        if (MP >= MPCost && Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer) && !IsJumping)
+        {
+            MP -= MPCost;
+            Debug.Log("Slam");
+            StartCoroutine(SlamAttack(0.1f));
+        }
+    }
+
+    private IEnumerator SlamAttack(float SlamTime) //Aktiver og deaktiver slam attack efter SlamTime
+    {
+        Slam.SetActive(true);
+        yield return new WaitForSecondsRealtime(SlamTime);
+        Slam.SetActive(false);
+        yield return null;
     }
 
     #endregion
