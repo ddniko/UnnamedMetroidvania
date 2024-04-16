@@ -19,6 +19,7 @@ public class LevelLoader : MonoBehaviour
 
     private Rigidbody2D rb;
 
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -87,6 +88,42 @@ public class LevelLoader : MonoBehaviour
         else
         {
             Player.WakeUp();
+        }
+    }
+
+    public void respawnEnemiesToRight(bool respawnEnemiesRight)
+    {
+        if (respawnEnemiesRight)
+        {
+            for (int i = 0; i < EnemyLeft.Length; i++)
+            {
+                EnemyLeft[i].SetActive(false);
+                EnemyRight[i].SetActive(true);
+            }
+            respawnEnemiesRight = false;
+        }
+    }
+    public void respawnEnemiesToLeft(bool respawnEnemiesLeft)
+    {
+        if (respawnEnemiesLeft)
+        {
+            for (int i = 0; i < EnemyLeft.Length; i++)
+            {
+                EnemyLeft[i].SetActive(true);
+                EnemyRight[i].SetActive(false);
+            }
+            respawnEnemiesLeft = false;
+        }
+    }
+    public void deathSide(string i)
+    {
+        if (i == "Left")
+        {
+            respawnEnemiesToLeft(true);
+        }
+        else
+        {
+            respawnEnemiesToRight(true);
         }
     }
 }
