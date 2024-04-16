@@ -26,7 +26,7 @@ public class EnemySimpelPatrol : MonoBehaviour
         currentPoint = pointB.transform;
         IsGround = true;
 
-        GroundCheck = this.gameObject.transform.GetChild(0).gameObject;
+        //GroundCheck = this.gameObject.transform.GetChild(0).gameObject;
     }
 
     // Update is called once per frame

@@ -64,6 +64,8 @@ public class NewPlayerMovement : MonoBehaviour
     [HideInInspector] public int MP;
     [HideInInspector] public int MaxMP;
     private bool WeaponSwap;
+    private Vector3 respawnPoint;
+
 
     //Magic WIP
     private int MPCost;
@@ -85,6 +87,11 @@ public class NewPlayerMovement : MonoBehaviour
     private GameObject bowStreight;
     private GameObject bowDiagUp;
     private GameObject bowDiagDown;
+
+    public Animator DeathFade;
+
+    private GameObject DeathSide;
+    private string DiedSide;
 
     #endregion
 
@@ -144,6 +151,9 @@ public class NewPlayerMovement : MonoBehaviour
         PHP = MaxPHP;
         MaxMP = Data.MP;
         MP = MaxMP;
+        respawnPoint = RB.transform.position;
+        DeathSide = RB.GameObject();
+        DiedSide = "Begin";
     }
 
     private void Update()
@@ -446,9 +456,11 @@ public class NewPlayerMovement : MonoBehaviour
         //Tjekker om spilleren dør
         if (PHP <= 0)
         {
+            DeathFade.SetTrigger("Start");
             Debug.Log("I'm too young to die...");
+            RB.transform.position = respawnPoint;
+            PHP = MaxPHP;
         }
-
         #endregion
     }
 
@@ -957,4 +969,37 @@ public class NewPlayerMovement : MonoBehaviour
         }
     }
     #endregion
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "RespawnPoint")
+        {
+            if (RB.velocity.x < 0)
+            {
+                DeathSide = collision.gameObject;
+                respawnPoint = new Vector3 (RB.transform.position.x + 5f, RB.transform.position.y);
+                DiedSide = "Right";
+            }
+            if (RB.velocity.x > 0)
+            {
+                DeathSide = collision.gameObject;
+                respawnPoint = new Vector3(RB.transform.position.x - 5f, RB.transform.position.y);
+                DiedSide = "Left";
+            }
+        }
+        if (collision.tag == "DeathPlain")
+        {
+            PHP = 0;
+        }
+    }
+
+    public void respawnPlayer()
+    {
+        DeathFade.SetTrigger("End");
+        DeathSide.SendMessage("deathSide", DiedSide);
+    }
+    public void deathSide(string h)
+    {
+        Debug.Log("U died");
+    }
 }

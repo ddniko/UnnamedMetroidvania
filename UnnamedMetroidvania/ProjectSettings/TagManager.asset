@@ -9,6 +9,8 @@ TagManager:
   - Slam
   - Sword
   - Fireball
+  - RespawnPoint
+  - DeathPlain
   layers:
   - Default
   - TransparentFX
