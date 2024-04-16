@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4020714547859438768}
   - component: {fileID: 1736666334962534850}
   - component: {fileID: 4638374593582786585}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Goomba 1 1
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -194,7 +194,7 @@ MonoBehaviour:
   speed: 2
   Ground:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   forceMulti: 8
   Up: 0.48
   KnockupForce: 20

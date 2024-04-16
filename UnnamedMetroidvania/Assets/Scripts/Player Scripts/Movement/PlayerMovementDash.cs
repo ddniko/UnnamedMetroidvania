@@ -127,14 +127,14 @@ public class NewPlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask _enemyCheck;
     #endregion
 
-    #region Camera Components
+    #region CAMERA COMPONENTS
     [Header("Camera Stuff")]
     [SerializeField] private GameObject _cameraFollowGO;
     private CameraFollowingObject _cameraFollowObject;
     private float _fallSpeedYDampingChangeThreshold;
     #endregion
 
-    #region ONSTART
+    #region ON START
     private void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
@@ -164,8 +164,10 @@ public class NewPlayerMovement : MonoBehaviour
         PHP = MaxPHP;
         MaxMP = Data.MP;
         MP = MaxMP;
+
+
         respawnPoint = RB.transform.position;
-        DeathSide = RB.GameObject();
+        DeathSide = RB.GameObject(); //Hvorfor RB.GameObject, når du bare kunne skrive GameObject?
         DiedSide = "Begin";
     }
     #endregion
@@ -374,7 +376,6 @@ public class NewPlayerMovement : MonoBehaviour
                 IsJumping = false;
                 _isJumpCut = false;
                 _isJumpFalling = false;
-
                 _wallJumpStartTime = Time.time;
                 _lastWallJumpDir = (LastOnWallRightTime > 0) ? -1 : 1; //if else statement der retunerer -1 eller 1
 
@@ -470,7 +471,7 @@ public class NewPlayerMovement : MonoBehaviour
         {
             ignore = false;
         }
-        Physics2D.IgnoreLayerCollision(6, 7, ignore); //ignorere collision, mellem lag 7 og 8 som er player og enemy
+        Physics2D.IgnoreLayerCollision(7, 8, ignore); //ignorere collision, mellem lag 7 og 8 som er player og enemy
         #endregion
 
         #region CAMERA FALL
@@ -909,7 +910,7 @@ public class NewPlayerMovement : MonoBehaviour
 
     #endregion
 
-    #region COLISSION
+    #region COLLISION
     private void OnCollisionEnter2D(Collision2D collision)
     {
         #region KNOCKBACK COLLISION
@@ -1060,14 +1061,18 @@ public class NewPlayerMovement : MonoBehaviour
     }
     #endregion
 
-
+    #region DEATH RESPWAN
     public void respawnPlayer()
     {
         DeathFade.SetTrigger("End");
         DeathSide.SendMessage("deathSide", DiedSide);
+
+
+        //Hvorfor ikke bare køre det som en normal method i stedet for SendMessage??
     }
     public void deathSide(string h)
     {
         Debug.Log("U died");
     }
+    #endregion
 }
