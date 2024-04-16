@@ -51,11 +51,11 @@ MonoBehaviour:
   dashEndRunLerp: 1
   dashRefillTime: 0.4
   dashInputBufferTime: 0.05
-  AttackSpeed: 0.541
+  AttackSpeed: 0.4
   ActiveFrames: 0.1
   IFrames: 1.5
-  KnockbackForce: 50
-  SDamage: 1
+  KnockbackForce: 30
+  SDamage: 0.1
   knockbackTime: 1
   FullChargeTime: 1
   MinimumCharge: 0.5

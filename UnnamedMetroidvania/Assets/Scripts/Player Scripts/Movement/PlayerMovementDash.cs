@@ -64,6 +64,10 @@ public class NewPlayerMovement : MonoBehaviour
     [HideInInspector] public int MP;
     [HideInInspector] public int MaxMP;
     private bool WeaponSwap;
+    private GameObject PogoPos;
+    private GameObject UpSlashPos;
+    private GameObject StreightSlashPos;
+    private bool Pogoing;
 
     //Magic WIP
     private int MPCost;
@@ -85,6 +89,10 @@ public class NewPlayerMovement : MonoBehaviour
     private GameObject bowStreight;
     private GameObject bowDiagUp;
     private GameObject bowDiagDown;
+
+
+    private Vector2 RespawnPoint;
+
 
     #endregion
 
@@ -120,6 +128,7 @@ public class NewPlayerMovement : MonoBehaviour
     private float _fallSpeedYDampingChangeThreshold;
     #endregion
 
+    #region ONSTART
     private void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
@@ -130,6 +139,9 @@ public class NewPlayerMovement : MonoBehaviour
         bowDiagUp = this.gameObject.transform.GetChild(8).gameObject;
         bowDiagDown = this.gameObject.transform.GetChild(9).gameObject;
         Slam = this.gameObject.transform.GetChild(11).gameObject;
+        PogoPos = this.gameObject.transform.GetChild(12).gameObject;
+        UpSlashPos = this.gameObject.transform.GetChild(13).gameObject;
+        StreightSlashPos = this.gameObject.transform.GetChild(14).gameObject;
     }
 
     private void Start()
@@ -147,10 +159,12 @@ public class NewPlayerMovement : MonoBehaviour
         MaxMP = Data.MP;
         MP = MaxMP;
     }
+    #endregion
 
     private void Update()
     {
         #region TIMERS
+
         LastOnGroundTime -= Time.deltaTime;
         LastOnWallTime -= Time.deltaTime;
         LastOnWallRightTime -= Time.deltaTime;
@@ -170,6 +184,7 @@ public class NewPlayerMovement : MonoBehaviour
         }
         else if (LastOnGroundTime < 0 && JumpsLeft == 1)
             JumpsLeft--;
+
         #endregion
 
         #region DOUBLE JUMP
@@ -177,10 +192,14 @@ public class NewPlayerMovement : MonoBehaviour
         {
             JumpsLeft = 1;
             DashedOff = true;
+            Pogoing = false;
+            hit = false;
         }
         #endregion
 
         #region INPUT HANDLER
+
+            #region MOVEMENT INPUT
         _moveInput.x = Input.GetAxisRaw("Horizontal");
         _moveInput.y = Input.GetAxisRaw("Vertical");
 
@@ -201,14 +220,27 @@ public class NewPlayerMovement : MonoBehaviour
         {
             OnDashInput(); //starter buffer
         }
+        #endregion
 
+            #region SWORD INPUT
         if ((Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.LeftControl)) && Cooldown <= 0f && WeaponSwap) //Attack efter hvad ens attack speed er
         {
+            if (_moveInput.y != 0)
+            {
+                DirectionalSword();
+            }
+            else
+            {
+                Sword.transform.position = StreightSlashPos.transform.position;
+                Sword.transform.eulerAngles = StreightSlashPos.transform.eulerAngles;
+            }
             startAttack(); //kørere startattack metoden
             Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
             Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
         }
+        #endregion
 
+            #region MAGIC INPUT
         if (Input.GetKeyDown(KeyCode.A)) //tjekker input for heal
         {
             HealMagicMethod(Data.HealCost);
@@ -221,29 +253,14 @@ public class NewPlayerMovement : MonoBehaviour
         {
             SlamMagicMethod(Data.SlamCost);
         }
+        #endregion
 
+            #region WEAPONSWAP INPUT
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             WeaponSwap = !WeaponSwap;
         }
 
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            Release = false;
-            TimeHeld = 0;
-            ShootBow(); //animation start
-        }
-
-        if (Input.GetKeyUp(KeyCode.V))
-        {
-            Release = true;
-            ShootBow();
-        }
-
-            #endregion
-
-
-        #region BOW CHECK
         if (!WeaponSwap)
         {
             bow.SetActive(true);
@@ -251,6 +268,21 @@ public class NewPlayerMovement : MonoBehaviour
         else
         {
             bow.SetActive(false);
+        }
+        #endregion
+
+            #region BOW INPUT
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            Release = false;
+            TimeHeld = 0;
+            TimeHeld = 0;
+            ShootBow(); //animation start
+        }
+        if (Input.GetKeyUp(KeyCode.V))
+        {
+            Release = true;
+            ShootBow();
         }
         if (_moveInput.y != 0)
         {
@@ -261,6 +293,8 @@ public class NewPlayerMovement : MonoBehaviour
             bow.transform.position = bowStreight.transform.position;
             bow.transform.eulerAngles = bowStreight.transform.eulerAngles;
         }
+        #endregion
+
         #endregion
 
         #region COLLISION CHECKS
@@ -382,23 +416,26 @@ public class NewPlayerMovement : MonoBehaviour
             {
                 SetGravityScale(0);
             }
-            else if (RB.velocity.y < 0 && _moveInput.y < 0) //Fast fall
+            /*else if (RB.velocity.y < 0 && _moveInput.y < 0) //Fast fall
             {
                 //Much higher gravity if holding down
                 SetGravityScale(Data.gravityScale * Data.fastFallGravityMult);
                 //Caps maximum fall speed, so when falling over large distances we don't accelerate to insanely high speeds
                 RB.velocity = new Vector2(RB.velocity.x, Mathf.Max(RB.velocity.y, -Data.maxFastFallSpeed));
-            }
-            else if (_isJumpCut) //giver slip på hop knap
+            }*/
+            
+            else if (_isJumpCut && (!Pogoing && !hit)) //giver slip på hop knap
             {
                 //Higher gravity if jump button released
                 SetGravityScale(Data.gravityScale * Data.jumpCutGravityMult);
                 RB.velocity = new Vector2(RB.velocity.x, Mathf.Max(RB.velocity.y, -Data.maxFallSpeed));
             }
-            else if ((IsJumping || IsWallJumping || _isJumpFalling) && Mathf.Abs(RB.velocity.y) < Data.jumpHangTimeThreshold) //jump hang
+
+            else if ((IsJumping || IsWallJumping || _isJumpFalling) && Mathf.Abs(RB.velocity.y) < Data.jumpHangTimeThreshold) //jump hang DET ER HELLER IKKE HER
             {
                 SetGravityScale(Data.gravityScale * Data.jumpHangGravityMult);
             }
+
             else if (RB.velocity.y < 0) //normalt fald
             {
                 //Higher gravity if falling
@@ -474,8 +511,7 @@ public class NewPlayerMovement : MonoBehaviour
             Slide();
         #endregion
         
-
-        #region KNOCKBACK
+        #region KNOCKBACK IKKE BRUGT
         /*if (hit)
         {
             //Laver en normalvektor og scaler den op så spilleren tager knockback
@@ -532,7 +568,6 @@ public class NewPlayerMovement : MonoBehaviour
     }
     #endregion
 
-    //MOVEMENT METHODS
     #region RUN METHODS
     private void Run(float lerpAmount) //kaldt fra fixed
     {
@@ -611,14 +646,12 @@ public class NewPlayerMovement : MonoBehaviour
         LastPressedJumpTime = 0;
         LastOnGroundTime = 0; //resetter buffer og cayote timer
         JumpsLeft--;
-
+        Pogoing = false;
         #region Perform Jump
         //We increase the force applied if we are falling
-        //This means we'll always feel like we jump the same amount 
+        //This means we'll always feel like we jump the same amount (IKKE MERE :D)
         //(setting the player's Y velocity to 0 beforehand will likely work the same, but I find this more elegant :D)
         float force = Data.jumpForce;
-        //if (RB.velocity.y < 0)
-        //  force -= RB.velocity.y;
         RB.velocity = new Vector2(RB.velocity.x, 0);
 
         RB.AddForce(Vector2.up * force, ForceMode2D.Impulse);
@@ -776,13 +809,29 @@ public class NewPlayerMovement : MonoBehaviour
     #region SWORD METHOD
     void startAttack()
     {
-        //A_Sword.Invoke(); //invoke kører starter et event, som gør sværet aktivt
         Sword.SetActive(true);
+        if (_moveInput.y < 0)
+        {
+            Pogoing = true;
+        }
     }
     void endAttack()
     {
-        //D_Sword.Invoke(); //starter event, som deaktivere sværet
         Sword.SetActive(false);
+    }
+    void DirectionalSword()
+
+    {
+        if (_moveInput.y < 0)
+        {
+            Sword.transform.position = PogoPos.transform.position;
+            Sword.transform.eulerAngles = PogoPos.transform.eulerAngles;
+        }
+        else
+        {
+            Sword.transform.position = UpSlashPos.transform.position;
+            Sword.transform.eulerAngles = UpSlashPos.transform.eulerAngles;
+        }
     }
     #endregion
 
@@ -849,9 +898,10 @@ public class NewPlayerMovement : MonoBehaviour
 
     #endregion
 
-    #region KNOCKBACK CHECK
+    #region COLISSION
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        #region KNOCKBACK COLLISION
         enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
         //Hvis man har Iframes kører dette ikke
         if (IFramesCD <= 0f)
@@ -864,7 +914,7 @@ public class NewPlayerMovement : MonoBehaviour
                 RB.velocity = Vector2.zero;
                 //Laver en normalvektor og scaler den op så spilleren tager knockback
                 Vector2 dir = new Vector2(enemyRB.position.x - RB.position.x, enemyRB.position.y - RB.position.y);
-                Vector2 force = new Vector2(dir.normalized.x, dir.normalized.y * (Data.runMaxSpeed / Data.maxFallSpeed));
+                Vector2 force = new Vector2(dir.normalized.x * 1.5f, dir.normalized.y * (Data.runMaxSpeed / Data.maxFallSpeed));
                 //RB.velocity = Vector2.zero;
                 //RB.AddForce(-dir.normalized * Data.KnockbackForce, ForceMode2D.Impulse);
                 RB.AddForce(-force * Data.KnockbackForce, ForceMode2D.Impulse);
@@ -876,6 +926,24 @@ public class NewPlayerMovement : MonoBehaviour
                 ignore = true;
             }
         }
+        #endregion
+
+        #region SPIKE COLLISION
+        if (collision.gameObject.tag == "Spike")
+        {
+            gameObject.transform.position = RespawnPoint;
+            PHP--;
+        }
+        #endregion
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        #region SPIKE RESPAWN
+        if (collision.tag == "SafeSpot")
+        {
+            RespawnPoint = collision.gameObject.transform.position;
+        }
+        #endregion
     }
     #endregion
 

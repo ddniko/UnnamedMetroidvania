@@ -88,7 +88,7 @@ public class PlayerDataWithDash : ScriptableObject
     [Range(0.01f, 2f)] public float IFrames;
 
     public float KnockbackForce;
-    [Range(1f,20f)] public float SDamage;
+    [Range(0.1f,20f)] public float SDamage;
     [Range(0.01f, 2f)] public float knockbackTime;
 
     [Space(20)]

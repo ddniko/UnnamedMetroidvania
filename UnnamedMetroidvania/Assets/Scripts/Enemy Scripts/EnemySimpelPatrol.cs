@@ -85,11 +85,24 @@ public class EnemySimpelPatrol : MonoBehaviour
     {
         if (collision.tag == "Sword")
         {
-            IsGround = false;
-            dir = new Vector2(-Mathf.Sign(collision.transform.position.x - RB.position.x),Up);
-            RB.velocity = Vector2.zero;
-            RB.AddForce(dir * forceMulti, ForceMode2D.Impulse);
-
+            if (collision.transform.eulerAngles == new Vector3(0, 0, 180))
+            {
+                StartCoroutine(Stun());
+            }
+            else if (collision.transform.eulerAngles == new Vector3(0, 0, 0))
+            {
+                IsGround = false;
+                RB.velocity = Vector2.zero;
+                dir = Vector2.up * forceMulti;
+                RB.AddForce(dir * forceMulti, ForceMode2D.Impulse);
+            }
+            else
+            {
+                IsGround = false;
+                RB.velocity = Vector2.zero;
+                dir = new Vector2(-Mathf.Sign(collision.transform.position.x - RB.position.x), Up);
+                RB.AddForce(dir * forceMulti, ForceMode2D.Impulse);
+            }
         }
 
         if (collision.tag == "Slam") //Hvis slammet gå opad
@@ -103,8 +116,8 @@ public class EnemySimpelPatrol : MonoBehaviour
         if (collision.tag == "Arrow") //Hvis slammet gå opad
         {
             IsGround = false;
-            dir = new Vector2(-Mathf.Sign(collision.transform.position.x - RB.position.x), Up);
             RB.velocity = Vector2.zero;
+            dir = new Vector2(-Mathf.Sign(collision.transform.position.x - RB.position.x), Up);
             RB.AddForce(dir * collision.attachedRigidbody.velocity.magnitude / 20f * forceMulti, ForceMode2D.Impulse);
         }
     }
@@ -124,6 +137,14 @@ public class EnemySimpelPatrol : MonoBehaviour
                 flip();
             }
         }
+    }
+
+    IEnumerator Stun()
+    {
+        IsGround = false;
+        RB.velocity = Vector2.zero;
+        yield return new WaitForSeconds(0.3f);
+        IsGround = true;
     }
     #endregion
 }

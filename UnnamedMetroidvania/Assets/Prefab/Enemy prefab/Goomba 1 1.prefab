@@ -194,7 +194,7 @@ MonoBehaviour:
   speed: 2
   Ground:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 0
   forceMulti: 8
   Up: 0.48
   KnockupForce: 20

@@ -9,6 +9,8 @@ TagManager:
   - Slam
   - Sword
   - Fireball
+  - Spike
+  - SafeSpot
   layers:
   - Default
   - TransparentFX
