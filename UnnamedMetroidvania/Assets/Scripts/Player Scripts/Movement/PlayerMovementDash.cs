@@ -167,7 +167,7 @@ public class NewPlayerMovement : MonoBehaviour
 
 
         respawnPoint = RB.transform.position;
-        DeathSide = RB.GameObject(); //Hvorfor RB.GameObject, når du bare kunne skrive GameObject?
+        DeathSide = gameObject;
         DiedSide = "Begin";
     }
     #endregion
@@ -1066,9 +1066,6 @@ public class NewPlayerMovement : MonoBehaviour
     {
         DeathFade.SetTrigger("End");
         DeathSide.SendMessage("deathSide", DiedSide);
-
-
-        //Hvorfor ikke bare køre det som en normal method i stedet for SendMessage??
     }
     public void deathSide(string h)
     {
