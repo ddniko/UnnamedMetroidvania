@@ -11,7 +11,7 @@ public class EnemyHP : MonoBehaviour
     private float EnemyHitPoint;
 
     Rigidbody2D EnemyRB;
-    float ground;
+    private float ground;
     public float slamHeight = 5f;
 
     public int MPRevcory = 5;
@@ -43,6 +43,15 @@ public class EnemyHP : MonoBehaviour
             Rigidbody2D Arrow = collision.GetComponent<Rigidbody2D>();
             EHP -= Data.ArrowBaseDamage * (Arrow.velocity.magnitude / Data.ArrowSpeed);
             Destroy(collision.gameObject);
+
+            if (PlayerData.MP < PlayerData.MaxMP)
+            {
+                PlayerData.MP += MPRevcory;
+                if (PlayerData.MP >= PlayerData.MaxMP)
+                {
+                    PlayerData.MP = PlayerData.MaxMP;
+                }
+            }
         }
 
         if (collision.tag == "Fireball")

@@ -13,6 +13,9 @@ TagManager:
   - Sword
   - Arrow
   - Fireball
+  - BossGround
+  - Boss
+  - Projectile
   layers:
   - Default
   - TransparentFX
