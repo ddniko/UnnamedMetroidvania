@@ -29,7 +29,7 @@ public class LevelLoader : MonoBehaviour
     {
         if (collision.CompareTag("Player") && Player.velocity.x > 0)
         {
-            for (int i = 0; i < EnemyLeft.Length; i++)
+            for (int i = 0; i < 6; i++)
             {
                 EnemyLeft[i].SetActive(false);
                 EnemyRight[i].SetActive(true);
@@ -40,7 +40,7 @@ public class LevelLoader : MonoBehaviour
 
         if (collision.CompareTag("Player") && Player.velocity.x < 0)
         {
-            for (int i = 0; i < EnemyLeft.Length; i++)
+            for (int i = 0; i < 6; i++)
             {
                 EnemyLeft[i].SetActive(true);
                 EnemyRight[i].SetActive(false);
@@ -95,7 +95,7 @@ public class LevelLoader : MonoBehaviour
     {
         if (respawnEnemiesRight)
         {
-            for (int i = 0; i < EnemyLeft.Length; i++)
+            for (int i = 0; i < 6; i++)
             {
                 EnemyLeft[i].SetActive(false);
                 EnemyRight[i].SetActive(true);
@@ -107,7 +107,7 @@ public class LevelLoader : MonoBehaviour
     {
         if (respawnEnemiesLeft)
         {
-            for (int i = 0; i < EnemyLeft.Length; i++)
+            for (int i = 0; i < 6; i++)
             {
                 EnemyLeft[i].SetActive(true);
                 EnemyRight[i].SetActive(false);
