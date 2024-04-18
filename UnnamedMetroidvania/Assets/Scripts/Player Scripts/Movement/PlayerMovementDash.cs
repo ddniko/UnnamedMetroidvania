@@ -646,7 +646,7 @@ public class NewPlayerMovement : MonoBehaviour
 
         #region MoreCameraStuff
         //Kalder på "Camera Following Object" script CallTurn funktion
-        _cameraFollowObject.CallTurn();
+        //_cameraFollowObject.CallTurn();
         #endregion
     }
     #endregion
@@ -914,13 +914,13 @@ public class NewPlayerMovement : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         #region KNOCKBACK COLLISION
-        enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
         //Hvis man har Iframes kører dette ikke
         if (IFramesCD <= 0f)
         {
             //Hvis spilleren rør en "enemy" tager de skade og får invincivility frames
             if (collision.gameObject.tag == "Enemy")
             {
+                enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
                 //Debug.Log("Hit");
                 hit = true;
                 RB.velocity = Vector2.zero;
@@ -976,6 +976,34 @@ public class NewPlayerMovement : MonoBehaviour
         if (collision.tag == "SafeSpot")
         {
             SafePoint = collision.gameObject.transform.position;
+        }
+        #endregion
+
+        #region BOSS DAMAGE
+        if (collision.tag == "Boss")
+        {
+            enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
+            //Debug.Log("Hit");
+            hit = true;
+            RB.velocity = Vector2.zero;
+            //Laver en normalvektor og scaler den op så spilleren tager knockback
+            Vector2 dir = new Vector2(enemyRB.position.x - RB.position.x, enemyRB.position.y - RB.position.y);
+            Vector2 force = new Vector2(dir.normalized.x * 1.5f, dir.normalized.y * (Data.runMaxSpeed / Data.maxFallSpeed));
+            //RB.velocity = Vector2.zero;
+            //RB.AddForce(-dir.normalized * Data.KnockbackForce, ForceMode2D.Impulse);
+            RB.AddForce(-force * Data.KnockbackForce, ForceMode2D.Impulse);
+            //StartCoroutine(nameof(StartDash), -dir);
+
+            //starter i frames
+            PHP--;
+            IFramesCD = Data.IFrames;
+            ignore = true;
+        }
+
+        if (collision.tag == "Projectile" && IFramesCD <= 0)
+        {
+            PHP--;
+            IFramesCD = Data.IFrames;
         }
         #endregion
     }

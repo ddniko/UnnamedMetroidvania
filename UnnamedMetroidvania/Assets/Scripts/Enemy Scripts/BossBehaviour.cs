@@ -44,7 +44,6 @@ public class BossBehaviour : MonoBehaviour
     private bool Hovering;
 
     //fourth attack
-    [SerializeField] private Transform SlamPos;
     private Transform SlamRight;
     private Transform SlamLeft;
     private Vector3 HoverPos;
@@ -62,7 +61,7 @@ public class BossBehaviour : MonoBehaviour
         SlamLeft = transform.Find("SlamLeft");
         BossRB = gameObject.GetComponent<Rigidbody2D>();
         Rend = GetComponent<SpriteRenderer>();
-        Player = GameObject.Find("ShootME");
+        Player = GameObject.Find("Player");
     }
 
     
@@ -208,9 +207,11 @@ public class BossBehaviour : MonoBehaviour
             gameObject.transform.position = HoverPos;
             BossRB.velocity = Vector3.zero;
             Hovering = true;
-            yield return new WaitForSeconds(2.2f);
+            yield return new WaitForSeconds(2f);
+            Hovering = false;
+            yield return new WaitForSeconds(0.2f);
             Slam();
-            yield return new WaitForSeconds(0.8f);
+            yield return new WaitForSeconds(0.9f);
         }
         Debug.Log("done");
         /*Hovering = true;
@@ -258,15 +259,13 @@ public class BossBehaviour : MonoBehaviour
     private void Slam()
     {
         Slamming = true;
-        Hovering = false;
-        BossRB.velocity = Vector2.down * 70f;
+        BossRB.velocity = Vector2.down * 40f;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.tag == "BossGround" && Slamming)
         {
-            Debug.Log("collision?");
             GameObject SlamRightproj = Instantiate(Projectile, SlamRight.position, SlamRight.rotation);
             GameObject SlamLeftproj = Instantiate(Projectile, SlamLeft.position, SlamLeft.rotation);
             SlamRightproj.SendMessage("SlamShot");
