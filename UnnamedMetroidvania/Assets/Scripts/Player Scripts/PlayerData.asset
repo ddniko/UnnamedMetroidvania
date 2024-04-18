@@ -57,13 +57,14 @@ MonoBehaviour:
   KnockbackForce: 30
   SDamage: 0.1
   knockbackTime: 1
-  FullChargeTime: 1
-  MinimumCharge: 0.5
+  FullChargeTime: 0.6
+  MinimumCharge: 0.25
   ArrowBaseDamage: 0.5
   TimeBeforeGravity: 0.5
   ArrowGravity: 4.5
   ArrowSpeed: 20
   PHP: 5
+  FlashDur: 0.3
   MP: 100
   HealCost: 20
   FireballCost: 10

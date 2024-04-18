@@ -5,6 +5,7 @@ using UnityEngine;
 using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class NewPlayerMovement : MonoBehaviour
 {
@@ -55,7 +56,6 @@ public class NewPlayerMovement : MonoBehaviour
 
     //Combat
     private float Cooldown;
-    private GameObject Sword;
     private Rigidbody2D enemyRB;
     private bool ignore;
     private float IFramesCD;
@@ -69,6 +69,8 @@ public class NewPlayerMovement : MonoBehaviour
     private GameObject StreightSlashPos;
     private bool Pogoing;
     private Vector3 respawnPoint;
+    [SerializeField] private LayerMask BossLayer;
+    [SerializeField] private GameObject Sword;
 
 
     //Magic WIP
@@ -99,6 +101,14 @@ public class NewPlayerMovement : MonoBehaviour
 
     private GameObject DeathSide;
     private string DiedSide;
+
+    [SerializeField] private Material RedFlash;
+    private Material OrigMaterial;
+    private SpriteRenderer Rend;
+    [SerializeField] private Canvas BowGauge;
+    private RectTransform BowGaugeRect;
+    [SerializeField] private Image ChargeBar;
+    [SerializeField] private Image MinCharge;
 
     #endregion
 
@@ -138,16 +148,15 @@ public class NewPlayerMovement : MonoBehaviour
     private void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
-        Sword = this.gameObject.transform.GetChild(2).gameObject;
-        bow = this.gameObject.transform.GetChild(3).gameObject;
-        PlayerCenter = this.gameObject.transform.GetChild(6).gameObject;
-        bowStreight = this.gameObject.transform.GetChild(7).gameObject;
-        bowDiagUp = this.gameObject.transform.GetChild(8).gameObject;
-        bowDiagDown = this.gameObject.transform.GetChild(9).gameObject;
-        Slam = this.gameObject.transform.GetChild(11).gameObject;
-        PogoPos = this.gameObject.transform.GetChild(12).gameObject;
-        UpSlashPos = this.gameObject.transform.GetChild(13).gameObject;
-        StreightSlashPos = this.gameObject.transform.GetChild(14).gameObject;
+        bow = this.gameObject.transform.GetChild(2).gameObject;
+        PlayerCenter = this.gameObject.transform.GetChild(5).gameObject;
+        bowStreight = this.gameObject.transform.GetChild(6).gameObject;
+        bowDiagUp = this.gameObject.transform.GetChild(7).gameObject;
+        bowDiagDown = this.gameObject.transform.GetChild(8).gameObject;
+        Slam = this.gameObject.transform.GetChild(10).gameObject;
+        PogoPos = this.gameObject.transform.GetChild(11).gameObject;
+        UpSlashPos = this.gameObject.transform.GetChild(12).gameObject;
+        StreightSlashPos = this.gameObject.transform.GetChild(13).gameObject;
     }
 
     private void Start()
@@ -157,6 +166,11 @@ public class NewPlayerMovement : MonoBehaviour
         ArrowRB = Arrow.GetComponent<Rigidbody2D>();
 
         WeaponSwap = true;
+
+        Rend = gameObject.GetComponent<SpriteRenderer>();
+        OrigMaterial = Rend.material;
+
+        BowGaugeRect = BowGauge.GetComponent<RectTransform>();
 
         _cameraFollowObject = _cameraFollowGO.GetComponent<CameraFollowingObject>();
         _fallSpeedYDampingChangeThreshold = CameraManager.instance._fallSpeedYDampingChangeThreshold;
@@ -238,16 +252,16 @@ public class NewPlayerMovement : MonoBehaviour
         {
             if (_moveInput.y != 0)
             {
-                DirectionalSword();
+                //DirectionalSword();
             }
             else
             {
-                Sword.transform.position = StreightSlashPos.transform.position;
-                Sword.transform.eulerAngles = StreightSlashPos.transform.eulerAngles;
+                //Sword.transform.position = StreightSlashPos.transform.position;
+                //Sword.transform.eulerAngles = StreightSlashPos.transform.eulerAngles;
             }
             startAttack(); //kørere startattack metoden
             Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
-            Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
+            //Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
         }
         #endregion
 
@@ -275,10 +289,17 @@ public class NewPlayerMovement : MonoBehaviour
         if (!WeaponSwap)
         {
             bow.SetActive(true);
+            //MinCharge.fillAmount = Data.MinimumCharge / Data.FullChargeTime;
+            //MinCharge.GetComponent<RectTransform>().position = new Vector3(MinCharge.transform.position.x + Data.MinimumCharge / Data.FullChargeTime * 100, MinCharge.transform.position.y, MinCharge.transform.position.z);
+            MinCharge.GetComponent<RectTransform>().localPosition = new Vector3(Data.MinimumCharge / Data.FullChargeTime * 100 - 50, 0,0);
+
+
+            ChargeBar.fillAmount = TimeHeld / Data.FullChargeTime;
         }
         else
         {
             bow.SetActive(false);
+            BowGauge.gameObject.SetActive(false);
         }
         #endregion
 
@@ -287,13 +308,14 @@ public class NewPlayerMovement : MonoBehaviour
         {
             Release = false;
             TimeHeld = 0;
-            TimeHeld = 0;
             ShootBow(); //animation start
+            BowGauge.gameObject.SetActive(true);
         }
         if (Input.GetKeyUp(KeyCode.V))
         {
             Release = true;
             ShootBow();
+            BowGauge.gameObject.SetActive(false);
         }
         if (_moveInput.y != 0)
         {
@@ -642,7 +664,10 @@ public class NewPlayerMovement : MonoBehaviour
         scale.x *= -1;
         transform.localScale = scale;
 
-        IsFacingRight = !IsFacingRight;        
+        IsFacingRight = !IsFacingRight;
+
+        BowGaugeRect.localScale = new Vector3(-BowGaugeRect.localScale.x, BowGaugeRect.localScale.y, BowGaugeRect.localScale.z);
+
 
         #region MoreCameraStuff
         //Kalder på "Camera Following Object" script CallTurn funktion
@@ -825,24 +850,15 @@ public class NewPlayerMovement : MonoBehaviour
         if (_moveInput.y < 0)
         {
             Pogoing = true;
+            Sword.SendMessage("PogoHit");
         }
-    }
-    void endAttack()
-    {
-        Sword.SetActive(false);
-    }
-    void DirectionalSword()
-
-    {
-        if (_moveInput.y < 0)
+        else if (_moveInput.y > 0)
         {
-            Sword.transform.position = PogoPos.transform.position;
-            Sword.transform.eulerAngles = PogoPos.transform.eulerAngles;
+            Sword.SendMessage("UpHit");
         }
         else
         {
-            Sword.transform.position = UpSlashPos.transform.position;
-            Sword.transform.eulerAngles = UpSlashPos.transform.eulerAngles;
+            Sword.SendMessage("NormalHit");
         }
     }
     #endregion
@@ -920,17 +936,14 @@ public class NewPlayerMovement : MonoBehaviour
             //Hvis spilleren rør en "enemy" tager de skade og får invincivility frames
             if (collision.gameObject.tag == "Enemy")
             {
+                StartCoroutine(Ouch());
                 enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
-                //Debug.Log("Hit");
                 hit = true;
                 RB.velocity = Vector2.zero;
                 //Laver en normalvektor og scaler den op så spilleren tager knockback
                 Vector2 dir = new Vector2(enemyRB.position.x - RB.position.x, enemyRB.position.y - RB.position.y);
                 Vector2 force = new Vector2(dir.normalized.x * 1.5f, dir.normalized.y * (Data.runMaxSpeed / Data.maxFallSpeed));
-                //RB.velocity = Vector2.zero;
-                //RB.AddForce(-dir.normalized * Data.KnockbackForce, ForceMode2D.Impulse);
                 RB.AddForce(-force * Data.KnockbackForce, ForceMode2D.Impulse);
-                //StartCoroutine(nameof(StartDash), -dir);
 
                 //starter i frames
                 PHP--;
@@ -945,6 +958,7 @@ public class NewPlayerMovement : MonoBehaviour
         {
             gameObject.transform.position = SafePoint;
             PHP--;
+            StartCoroutine(Ouch());
         }
         #endregion
     }
@@ -980,9 +994,11 @@ public class NewPlayerMovement : MonoBehaviour
         #endregion
 
         #region BOSS DAMAGE
-        if (collision.tag == "Boss")
+        if ((BossLayer.value & (1 << collision.gameObject.layer)) > 0)
         {
+            Debug.Log("this one?");
             enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
+            StartCoroutine(Ouch());
             //Debug.Log("Hit");
             hit = true;
             RB.velocity = Vector2.zero;
@@ -1004,6 +1020,7 @@ public class NewPlayerMovement : MonoBehaviour
         {
             PHP--;
             IFramesCD = Data.IFrames;
+            StartCoroutine(Ouch());
         }
         #endregion
     }
@@ -1098,6 +1115,19 @@ public class NewPlayerMovement : MonoBehaviour
     public void deathSide(string h)
     {
         Debug.Log("U died");
+    }
+    #endregion
+
+    #region HIT MARKER
+    IEnumerator Ouch()
+    {
+        if (gameObject != null)
+        {
+            Rend.material = RedFlash;
+            yield return new WaitForSeconds(Data.FlashDur);
+            Rend.material = OrigMaterial;
+        }
+        yield return null;
     }
     #endregion
 }

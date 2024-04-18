@@ -14,6 +14,11 @@ public class EnemyHP : MonoBehaviour
     private float ground;
     public float slamHeight = 5f;
 
+    [SerializeField] private Material DamageFlash;
+    private SpriteRenderer Rend;
+    private Material OrigMaterial;
+    [SerializeField] private float flashDur;
+
     public int MPRevcory = 5;
 
     private void Start()
@@ -21,6 +26,10 @@ public class EnemyHP : MonoBehaviour
         EnemyHitPoint = EHP;
         EnemyRB = gameObject.GetComponent<Rigidbody2D>();
         ground = EnemyRB.position.y;
+
+        Rend = gameObject.GetComponent<SpriteRenderer>();
+        OrigMaterial = Rend.material;
+
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
@@ -28,6 +37,7 @@ public class EnemyHP : MonoBehaviour
         if (collision.tag == "Sword")
         {
             EHP -= Data.SDamage;
+            StartCoroutine(Ouch());
             if (PlayerData.MP < PlayerData.MaxMP)
             {
                 PlayerData.MP += MPRevcory;
@@ -42,6 +52,7 @@ public class EnemyHP : MonoBehaviour
         {
             Rigidbody2D Arrow = collision.GetComponent<Rigidbody2D>();
             EHP -= Data.ArrowBaseDamage * (Arrow.velocity.magnitude / Data.ArrowSpeed);
+            StartCoroutine(Ouch());
             Destroy(collision.gameObject);
 
             if (PlayerData.MP < PlayerData.MaxMP)
@@ -57,14 +68,26 @@ public class EnemyHP : MonoBehaviour
         if (collision.tag == "Fireball")
         {
             EHP -= Data.FireballDamage;
+            StartCoroutine(Ouch());
         }
 
         if (collision.tag == "Slam") //Hvis slammet gå opad
         {
             EHP -= Data.SlamDamage;
+            StartCoroutine(Ouch());
         }
     }
 
+    IEnumerator Ouch()
+    {
+        if (gameObject != null)
+        {
+            Rend.material = DamageFlash;
+            yield return new WaitForSeconds(flashDur);
+            Rend.material = OrigMaterial;
+        }
+        yield return null;
+    }
 
     void Update() //måske fixedupdate
     {

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7372573002974713764}
   - component: {fileID: 7260231668586449961}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: SafeSpot
   m_TagString: SafeSpot
   m_Icon: {fileID: 0}

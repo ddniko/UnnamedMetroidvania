@@ -176,6 +176,8 @@ MonoBehaviour:
   Data: {fileID: 11400000, guid: ee2fec2e85b65d44d9acb8fb41a39cf8, type: 2}
   PlayerData: {fileID: 0}
   slamHeight: 5
+  DamageFlash: {fileID: 2100000, guid: f6dd0094067531942866fb85689c3486, type: 2}
+  flashDur: 0.2
   MPRevcory: 5
 --- !u!114 &4638374593582786585
 MonoBehaviour:

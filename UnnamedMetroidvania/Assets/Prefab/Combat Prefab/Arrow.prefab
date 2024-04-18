@@ -161,6 +161,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd5fd4ac9cfb6bd41b6a10a760bc9af4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DestroyBullet:
+  DestroyArrow:
     serializedVersion: 2
     m_Bits: 64

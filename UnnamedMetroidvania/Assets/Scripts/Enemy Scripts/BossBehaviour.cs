@@ -16,6 +16,10 @@ public class BossBehaviour : MonoBehaviour
     [SerializeField] private NewPlayerMovement PlayerData;
     [HideInInspector] public int MPRevcory = 5;
 
+    [SerializeField] private Material DamageFlash;
+    private Material OrigMaterial;
+    [SerializeField] private float flashDur;
+
     //Positions
     [SerializeField] private Transform TopRight;
     [SerializeField] private Transform BottomLeft;
@@ -61,7 +65,9 @@ public class BossBehaviour : MonoBehaviour
         SlamLeft = transform.Find("SlamLeft");
         BossRB = gameObject.GetComponent<Rigidbody2D>();
         Rend = GetComponent<SpriteRenderer>();
+        OrigMaterial = Rend.material;
         Player = GameObject.Find("Player");
+        Rend.color = Color.red;
     }
 
     
@@ -84,6 +90,11 @@ public class BossBehaviour : MonoBehaviour
             Vector3 CurrentPos = gameObject.transform.position;
             Vector3 Velocity = Vector3.zero;
             gameObject.transform.position = Vector3.SmoothDamp(CurrentPos, HoverPos, ref Velocity, 0.03f);
+        }
+
+        if (Sweeping)
+        {
+
         }
 
         if (BHP <= 0)
@@ -235,11 +246,8 @@ public class BossBehaviour : MonoBehaviour
 
         if (collision.tag == "Sword")
         {
-
-            //Lav method for at vise de bliver ramt
-
-
             BHP -= Data.SDamage;
+            StartCoroutine(Ouch());
             if (PlayerData.MP < PlayerData.MaxMP)
             {
                 PlayerData.MP += MPRevcory;
@@ -252,12 +260,9 @@ public class BossBehaviour : MonoBehaviour
 
         if (collision.tag == "Arrow")
         {
-
-            //Lav method for at vise de bliver ramt
-
-
             Rigidbody2D Arrow = collision.GetComponent<Rigidbody2D>();
             BHP -= Data.ArrowBaseDamage * (Arrow.velocity.magnitude / Data.ArrowSpeed);
+            StartCoroutine(Ouch());
             Destroy(collision.gameObject);
 
             if (PlayerData.MP < PlayerData.MaxMP)
@@ -272,16 +277,24 @@ public class BossBehaviour : MonoBehaviour
 
         if (collision.tag == "Fireball")
         {
-            //Lav method for at vise de bliver ramt
-
+            StartCoroutine(Ouch());
             BHP -= Data.FireballDamage;
         }
 
         if (collision.tag == "Slam") //Hvis slammet gå opad
         {
-            //Lav method for at vise de bliver ramt
-
+            StartCoroutine(Ouch());
             BHP -= Data.SlamDamage;
         }
+    }
+    IEnumerator Ouch()
+    {
+        if (gameObject != null)
+        {
+            Rend.material = DamageFlash;
+            yield return new WaitForSeconds(flashDur);
+            Rend.material = OrigMaterial;
+        }
+        yield return null;
     }
 }

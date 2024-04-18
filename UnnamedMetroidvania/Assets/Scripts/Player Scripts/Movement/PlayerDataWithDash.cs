@@ -95,7 +95,7 @@ public class PlayerDataWithDash : ScriptableObject
 
 
     [Header("Bow")]
-    [Range(1f, 5f)] public float FullChargeTime;
+    [Range(0.1f, 5f)] public float FullChargeTime;
     [Range(0.01f, 1f)] public float MinimumCharge;
     [Range(0.5f, 5f)] public float ArrowBaseDamage;
     [Range(0.1f, 2f)] public float TimeBeforeGravity;
@@ -106,6 +106,7 @@ public class PlayerDataWithDash : ScriptableObject
 
     [Header("Magic")]
     public int PHP = 5;
+    public float FlashDur = 0.3f;
     public int MP = 100;
     public int HealCost = 20;
     public int FireballCost = 10;
