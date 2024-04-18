@@ -23,12 +23,13 @@ public class Projectile : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Destroy(gameObject, 5);
         if (ColorBlaster)
         {
             ShootDir = Player.transform.position - gameObject.transform.position;
             StartCoroutine(ShootPlayer());
         }
+
+        Destroy(gameObject, 5);
     }
 
     IEnumerator ShootPlayer()
@@ -36,6 +37,8 @@ public class Projectile : MonoBehaviour
         yield return new WaitForSeconds(3);
         projectileRB.velocity = ShootDir.normalized * speed * 0.8f;
         ColorBlaster = false;
+
+
         yield return null;
     }
 

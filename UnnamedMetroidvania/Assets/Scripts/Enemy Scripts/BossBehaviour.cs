@@ -83,9 +83,7 @@ public class BossBehaviour : MonoBehaviour
             HoverPos = new Vector3(Player.transform.position.x, TopRight.position.y, 0);
             Vector3 CurrentPos = gameObject.transform.position;
             Vector3 Velocity = Vector3.zero;
-
             gameObject.transform.position = Vector3.SmoothDamp(CurrentPos, HoverPos, ref Velocity, 0.03f);
-            //gameObject.transform.position = new Vector2(Player.transform.position.x, TopRight.position.y);
         }
 
         if (BHP <= 0)
@@ -105,13 +103,6 @@ public class BossBehaviour : MonoBehaviour
     #region ATTACKS
     IEnumerator Attack1()
     {
-        /*
-         * Spawn inden for bestemt område
-         * Lav angreb
-         * Teleporter/Dash væk igen
-         * Kør nyt attack metode
-         */
-        Debug.Log("Attack1 Teleport");
         Rend.color = Color.red;
         RandomPos();
         yield return new WaitForSeconds(1f);
@@ -136,13 +127,6 @@ public class BossBehaviour : MonoBehaviour
     }
     IEnumerator Attack2()
     {
-        /*
-         * Sweep
-         * 
-         * 
-         * 
-         */
-        Debug.Log("Attack2");
         Sweeping = true;
         Rend.color = Color.blue;
         RandomPos();
@@ -196,12 +180,7 @@ public class BossBehaviour : MonoBehaviour
     }
     IEnumerator Attack3()
     {
-        /*
-         * Slam, hover lige over hovedet af spilleren til den slammer jorden og laver 1-2 projektiler på hver side
-         */
         Rend.color = Color.yellow;
-        Debug.Log("Attack3");
-
         for (int i = 0; i < 3; i++)
         {
             gameObject.transform.position = HoverPos;
@@ -210,23 +189,10 @@ public class BossBehaviour : MonoBehaviour
             yield return new WaitForSeconds(2f);
             Hovering = false;
             yield return new WaitForSeconds(0.2f);
-            Slam();
+            Slamming = true;
+            BossRB.velocity = Vector2.down * 40f;
             yield return new WaitForSeconds(0.9f);
         }
-        Debug.Log("done");
-        /*Hovering = true;
-        yield return new WaitForSeconds(2f);
-        Slam();
-        yield return new WaitForSeconds(1f);
-        Hovering = true;
-        yield return new WaitForSeconds(2f);
-        Slam();
-        yield return new WaitForSeconds(1f);
-        Hovering = true;
-        yield return new WaitForSeconds(2f);
-        Slam();
-        yield return new WaitForSeconds(1f);*/
-
         Disappear();
         yield return new WaitForSeconds(1.5f);
         ChooseAttack();
@@ -254,12 +220,6 @@ public class BossBehaviour : MonoBehaviour
         Gone = new Vector2(100, 100);
         gameObject.transform.position = Gone;
         BossRB.velocity = Vector3.zero;
-    }
-
-    private void Slam()
-    {
-        Slamming = true;
-        BossRB.velocity = Vector2.down * 40f;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
