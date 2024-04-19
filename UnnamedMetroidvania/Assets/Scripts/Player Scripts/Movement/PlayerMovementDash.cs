@@ -72,6 +72,8 @@ public class NewPlayerMovement : MonoBehaviour
     private Vector3 respawnPoint;
     [SerializeField] private LayerMask BossLayer;
     [SerializeField] private GameObject Sword;
+    private GameObject FakeSword;
+    private bool Dead;
 
 
     //Magic
@@ -172,6 +174,7 @@ public class NewPlayerMovement : MonoBehaviour
         PogoPos = this.gameObject.transform.GetChild(11).gameObject;
         UpSlashPos = this.gameObject.transform.GetChild(12).gameObject;
         StreightSlashPos = this.gameObject.transform.GetChild(13).gameObject;
+        FakeSword = this.gameObject.transform.GetChild(16).gameObject;
     }
 
     private void Start()
@@ -243,108 +246,111 @@ public class NewPlayerMovement : MonoBehaviour
         #endregion
 
         #region INPUT HANDLER
-
+        if (!Dead)
+        {
             #region MOVEMENT INPUT
-        _moveInput.x = Input.GetAxisRaw("Horizontal");
-        _moveInput.y = Input.GetAxisRaw("Vertical");
+            _moveInput.x = Input.GetAxisRaw("Horizontal");
+            _moveInput.y = Input.GetAxisRaw("Vertical");
 
-        if (_moveInput.x != 0)
-            CheckDirectionToFace(_moveInput.x > 0);
+            if (_moveInput.x != 0)
+                CheckDirectionToFace(_moveInput.x > 0);
 
-        if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.J)) //tjekker for jump input
-        {
-            OnJumpInput(); //starter buffer
-        }
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.J)) //tjekker for jump input
+            {
+                OnJumpInput(); //starter buffer
+            }
 
-        if (Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.C) || Input.GetKeyUp(KeyCode.J)) //tjekker for hvornår man releaser jump button
-        {
-            OnJumpUpInput(); //starter buffer
-        }
+            if (Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.C) || Input.GetKeyUp(KeyCode.J)) //tjekker for hvornår man releaser jump button
+            {
+                OnJumpUpInput(); //starter buffer
+            }
 
-        if (Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.K)) //tjekker input for dash
-        {
-            OnDashInput(); //starter buffer
-        }
-        #endregion
+            if (Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.K)) //tjekker input for dash
+            {
+                OnDashInput(); //starter buffer
+            }
+            #endregion
 
             #region SWORD INPUT
-        if ((Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.LeftControl)) && Cooldown <= 0f && WeaponSwap) //Attack efter hvad ens attack speed er
-        {
-            if (_moveInput.y != 0)
+            if ((Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.LeftControl)) && Cooldown <= 0f && WeaponSwap) //Attack efter hvad ens attack speed er
             {
-                //DirectionalSword();
+                if (_moveInput.y != 0)
+                {
+                    //DirectionalSword();
+                }
+                else
+                {
+                    //Sword.transform.position = StreightSlashPos.transform.position;
+                    //Sword.transform.eulerAngles = StreightSlashPos.transform.eulerAngles;
+                }
+                StartCoroutine(startAttack()); //kørere startattack metoden
+                Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
+                                             //Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
+            }
+            #endregion
+
+            #region MAGIC INPUT
+            if (Input.GetKeyDown(KeyCode.A)) //tjekker input for heal
+            {
+                HealMagicMethod(Data.HealCost);
+            }
+            if (Input.GetKeyDown(KeyCode.D))  //Tjekker input for fireball
+            {
+                FireballMagicMethod(Data.FireballCost);
+            }
+            if (Input.GetKeyDown(KeyCode.S)) //Tjekker input for slam
+            {
+                SlamMagicMethod(Data.SlamCost);
+            }
+            #endregion
+
+            #region WEAPONSWAP INPUT
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                WeaponSwap = !WeaponSwap;
+            }
+
+            if (!WeaponSwap)
+            {
+                bow.SetActive(true);
+                MinCharge.GetComponent<RectTransform>().localPosition = new Vector3(Data.MinimumCharge / Data.FullChargeTime * 100 - 50, 0, 0);
+
+
+                ChargeBar.fillAmount = TimeHeld / Data.FullChargeTime;
             }
             else
             {
-                //Sword.transform.position = StreightSlashPos.transform.position;
-                //Sword.transform.eulerAngles = StreightSlashPos.transform.eulerAngles;
+                bow.SetActive(false);
+                BowGauge.gameObject.SetActive(false);
             }
-            startAttack(); //kørere startattack metoden
-            Cooldown = Data.AttackSpeed; //resetter cooldown til attackspeed
-            //Invoke("endAttack", Data.ActiveFrames); //fjerne sværet efter en bestemt mængde tid
-        }
-        #endregion
-
-            #region MAGIC INPUT
-        if (Input.GetKeyDown(KeyCode.A)) //tjekker input for heal
-        {
-            HealMagicMethod(Data.HealCost);
-        }
-        if (Input.GetKeyDown(KeyCode.D))  //Tjekker input for fireball
-        {
-            FireballMagicMethod(Data.FireballCost);
-        }
-        if (Input.GetKeyDown(KeyCode.S)) //Tjekker input for slam
-        {
-            SlamMagicMethod(Data.SlamCost);
-        }
-        #endregion
-
-            #region WEAPONSWAP INPUT
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            WeaponSwap = !WeaponSwap;
-        }
-
-        if (!WeaponSwap)
-        {
-            bow.SetActive(true);
-            MinCharge.GetComponent<RectTransform>().localPosition = new Vector3(Data.MinimumCharge / Data.FullChargeTime * 100 - 50, 0,0);
-
-
-            ChargeBar.fillAmount = TimeHeld / Data.FullChargeTime;
-        }
-        else
-        {
-            bow.SetActive(false);
-            BowGauge.gameObject.SetActive(false);
-        }
-        #endregion
+            #endregion
 
             #region BOW INPUT
-        if (Input.GetKeyDown(KeyCode.V))
-        {
-            Release = false;
-            TimeHeld = 0;
-            ShootBow(); 
-            BowGauge.gameObject.SetActive(true);
+            if ((Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.LeftControl)) && !WeaponSwap)
+            {
+                Release = false;
+                TimeHeld = 0;
+                ShootBow();
+                BowGauge.gameObject.SetActive(true);
+            }
+            if ((Input.GetKeyUp(KeyCode.Z) || Input.GetKeyUp(KeyCode.LeftControl)) && !WeaponSwap)
+            {
+                Release = true;
+                ShootBow();
+                BowGauge.gameObject.SetActive(false);
+            }
+            if (_moveInput.y != 0)
+            {
+                DiagonalBow();
+            }
+            else
+            {
+                bow.transform.position = bowStreight.transform.position;
+                bow.transform.eulerAngles = bowStreight.transform.eulerAngles;
+            }
+            #endregion
+
         }
-        if (Input.GetKeyUp(KeyCode.V))
-        {
-            Release = true;
-            ShootBow();
-            BowGauge.gameObject.SetActive(false);
-        }
-        if (_moveInput.y != 0)
-        {
-            DiagonalBow();
-        }
-        else
-        {
-            bow.transform.position = bowStreight.transform.position;
-            bow.transform.eulerAngles = bowStreight.transform.eulerAngles;
-        }
-        #endregion
 
         #endregion
 
@@ -534,6 +540,9 @@ public class NewPlayerMovement : MonoBehaviour
         //Tjekker om spilleren dør
         if (PHP <= 0)
         {
+            Dead = true;
+            RB.velocity = Vector3.zero;
+            _moveInput.x = 0;
             DeathFade.SetTrigger("Start");
             RB.transform.position = respawnPoint;
             PHP = MaxPHP;
@@ -581,7 +590,7 @@ public class NewPlayerMovement : MonoBehaviour
                 }
             }
         }
-        if (Vector2.Distance(gameObject.transform.position, TpUp.transform.position) < 1 && LastOnGroundTime > 0 && !OnlyOne)
+        if (Vector2.Distance(gameObject.transform.position, TpUp.transform.position) < 2.4f && LastOnGroundTime > 0 && !OnlyOne)
         {
             UpKey.gameObject.SetActive(true);
             if (_moveInput.y == 1)
@@ -907,22 +916,31 @@ public class NewPlayerMovement : MonoBehaviour
     #endregion
 
     #region SWORD METHOD
-    void startAttack()
+    IEnumerator startAttack()
     {
         Sword.SetActive(true);
+        FakeSword.SetActive(true);
         if (_moveInput.y < 0)
         {
             Pogoing = true;
             Sword.SendMessage("PogoHit");
+            FakeSword.transform.position = PogoPos.transform.position;
+            FakeSword.transform.eulerAngles = PogoPos.transform.eulerAngles;
         }
         else if (_moveInput.y > 0)
         {
             Sword.SendMessage("UpHit");
+            FakeSword.transform.position = UpSlashPos.transform.position;
+            FakeSword.transform.eulerAngles = UpSlashPos.transform.eulerAngles;
         }
         else
         {
             Sword.SendMessage("NormalHit");
+            FakeSword.transform.position = StreightSlashPos.transform.position;
+            FakeSword.transform.eulerAngles = StreightSlashPos.transform.eulerAngles;
         }
+        yield return new WaitForSeconds(Data.ActiveFrames);
+        FakeSword.SetActive(false);
     }
     #endregion
 
@@ -930,7 +948,7 @@ public class NewPlayerMovement : MonoBehaviour
     private void HealMagicMethod(int MPCost) //Heal
     {
         //har man nok MP og står man på jorden
-        if (MP >= MPCost && LastOnGroundTime >= 0 /*PHP < MaxPHP && Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer) && !IsJumping*/)
+        if (MP >= MPCost && LastOnGroundTime >= 0 && PHP < MaxPHP)
         {
             PHP++;
             MP -= MPCost;
@@ -1087,11 +1105,11 @@ public class NewPlayerMovement : MonoBehaviour
     #region BOW METHOD
     void ShootBow()
     {
-        if (!Release && !WeaponSwap)
+        if (!Release)
         {
             //start animation?!?!?
         }
-        else if (Release && !WeaponSwap)
+        else if (Release)
         {
             if (TimeHeld > Data.FullChargeTime)
                 TimeHeld = Data.FullChargeTime;
@@ -1169,6 +1187,7 @@ public class NewPlayerMovement : MonoBehaviour
     {
         DeathFade.SetTrigger("End");
         DeathSide.SendMessage("deathSide", DiedSide);
+        Dead = false;
     }
     public void deathSide(string h)
     {

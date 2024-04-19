@@ -2,17 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class BossBehaviour : MonoBehaviour
 {
     private SpriteRenderer Rend;
     private GameObject Player;
     [SerializeField] private LayerMask GroundLayer;
+    [SerializeField] private Image HealthBar;
+    [SerializeField] private Canvas Health;
 
     //Combat
-    private float BHP = 150;
-    private float BHPStart = 150;
+    private float BHP;
+    private float BHPStart = 120;
     [SerializeField] private PlayerDataWithDash Data;
     [SerializeField] private NewPlayerMovement PlayerData;
     [HideInInspector] public int MPRevcory = 5;
@@ -80,6 +82,8 @@ public class BossBehaviour : MonoBehaviour
             startBoss = true;
             BossStartIntro = true;
             BHP = BHPStart;
+            Health.gameObject.SetActive(false);
+
         }
         if (BossStartIntro)
         {
@@ -107,8 +111,11 @@ public class BossBehaviour : MonoBehaviour
 
         if (BHP <= 0)
         {
+            GameObject.Find("ToBeContinued").transform.position = new Vector3(178.11f,-2.73f,0);
             Destroy(gameObject);
         }
+
+        HealthBar.fillAmount = BHP / BHPStart;
     }
 
     private void ChooseAttack()
@@ -220,6 +227,7 @@ public class BossBehaviour : MonoBehaviour
     IEnumerator BossIntro()
     {
         BossStartIntro = false;
+        gameObject.transform.position = TopRight.transform.position;
         yield return new WaitForSeconds(2.5f);
         float speed = 0.5f;
         Rend.color = Color.red;
@@ -330,8 +338,11 @@ public class BossBehaviour : MonoBehaviour
         if (gameObject != null)
         {
             Rend.material = DamageFlash;
+            Health.gameObject.SetActive(true);
+            HealthBar.fillAmount = BHP / BHPStart;
             yield return new WaitForSeconds(flashDur);
             Rend.material = OrigMaterial;
+            Health.gameObject.SetActive(false);
         }
         yield return null;
     }

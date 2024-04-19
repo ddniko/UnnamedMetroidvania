@@ -66,7 +66,7 @@ public class LevelLoader : MonoBehaviour
 
         yield return new WaitForSeconds(transitionTime);
 
-        Player.transform.position = new Vector3 (rb.transform.position.x + transitionWarp, transform.position.y);
+        Player.transform.position = new Vector3 (rb.transform.position.x + transitionWarp, transform.position.y + 1);
 
         transitionCircleWipeRightToLeft.SetTrigger("End");
 
@@ -80,7 +80,7 @@ public class LevelLoader : MonoBehaviour
 
         yield return new WaitForSeconds(transitionTime);
 
-        Player.transform.position = new Vector3(rb.transform.position.x - transitionWarp, transform.position.y);
+        Player.transform.position = new Vector3(rb.transform.position.x - transitionWarp, transform.position.y + 1);
 
         transitionCircleWipeLeftToRight.SetTrigger("End");
 
