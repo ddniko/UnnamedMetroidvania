@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4965377a752bbc4cbd90c4e668eb126, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
-  gravityStrength: -37.5
-  gravityScale: 3.8226297
+  gravityStrength: -43.75
+  gravityScale: 4.459735
   fallGravityMult: 1
   maxFallSpeed: 9
   fastFallGravityMult: 5
@@ -26,15 +26,15 @@ MonoBehaviour:
   accelInAir: 1
   deccelInAir: 1
   doConserveMomentum: 0
-  jumpHeight: 3
+  jumpHeight: 3.5
   jumpTimeToApex: 0.4
-  jumpForce: 15
+  jumpForce: 17.5
   jumpCutGravityMult: 3
   jumpHangGravityMult: 0.975
   jumpHangTimeThreshold: 0
   jumpHangAccelerationMult: 0
   jumpHangMaxSpeedMult: 0
-  wallJumpForce: {x: 20, y: 10}
+  wallJumpForce: {x: 20, y: 11.5}
   wallJumpRunLerp: 0
   wallJumpTime: 0
   doTurnOnWallJump: 1
@@ -55,19 +55,19 @@ MonoBehaviour:
   ActiveFrames: 0.1
   IFrames: 1.5
   KnockbackForce: 30
-  SDamage: 0.1
+  SDamage: 1
   knockbackTime: 1
   FullChargeTime: 0.7
   MinimumCharge: 0.3
-  ArrowBaseDamage: 0.5
+  ArrowBaseDamage: 1.5
   TimeBeforeGravity: 0.5
   ArrowGravity: 4.5
   ArrowSpeed: 20
   PHP: 5
   FlashDur: 0.3
   MP: 100
-  HealCost: 20
-  FireballCost: 10
-  FireballDamage: 5
-  SlamCost: 15
+  HealCost: 50
+  FireballCost: 30
+  FireballDamage: 2
+  SlamCost: 20
   SlamDamage: 1

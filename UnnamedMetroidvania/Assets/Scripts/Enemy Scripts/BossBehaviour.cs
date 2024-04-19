@@ -54,6 +54,7 @@ public class BossBehaviour : MonoBehaviour
     private Vector3 HoverPos;
 
     bool startBoss;
+    bool BossStartIntro;
 
     [HideInInspector] public int Attacknumber;
 
@@ -68,8 +69,7 @@ public class BossBehaviour : MonoBehaviour
         BossRB = gameObject.GetComponent<Rigidbody2D>();
         Rend = GetComponent<SpriteRenderer>();
         OrigMaterial = Rend.material;
-        Player = GameObject.Find("Player");
-        Rend.color = Color.red;
+        Player = GameObject.Find("Player");;
     }
 
     
@@ -78,14 +78,12 @@ public class BossBehaviour : MonoBehaviour
         if (gameObject.activeSelf && startBoss == false)
         {
             startBoss = true;
+            BossStartIntro = true;
             BHP = BHPStart;
-            Debug.Log(startBoss);
-            Debug.Log(BHP);
         }
-
-        if (Input.GetKeyDown(KeyCode.N))
+        if (BossStartIntro)
         {
-            ChooseAttack();
+            StartCoroutine(BossIntro());
         }
 
         if ((Vector2.Distance(gameObject.transform.position, SweepRight.transform.position) < 0.3f || Vector2.Distance(gameObject.transform.position, SweepLeft.transform.position) < 0.3f) && Sweeping)
@@ -116,7 +114,6 @@ public class BossBehaviour : MonoBehaviour
     private void ChooseAttack()
     {
         Attacknumber = Random.Range(1, 4);
-        //Attacknumber = 1;
         StartCoroutine("Attack" + Attacknumber);
     }
 
@@ -222,8 +219,40 @@ public class BossBehaviour : MonoBehaviour
 
     IEnumerator BossIntro()
     {
-        // start en intro til bossen, f.eks. Navn kommer op på skærmen
-        yield return null;
+        BossStartIntro = false;
+        yield return new WaitForSeconds(2.5f);
+        float speed = 0.5f;
+        Rend.color = Color.red;
+        yield return new WaitForSeconds(speed);
+        Rend.color = new Color(1.0f, 0.64f, 0.0f);
+        yield return new WaitForSeconds(speed);
+        Rend.color = Color.yellow;
+        yield return new WaitForSeconds(speed);
+        Rend.color = Color.green;
+        yield return new WaitForSeconds(speed);
+        Rend.color = Color.blue;
+        yield return new WaitForSeconds(speed);
+        Rend.color = new Color(75 / 255f, 0, 130 / 255f);
+        yield return new WaitForSeconds(speed);
+        Rend.color = new Color(127 / 255, 0, 1);
+        speed = speed / 2;
+        Rend.color = Color.red;
+        yield return new WaitForSeconds(speed);
+        Rend.color = new Color(1.0f, 0.64f, 0.0f);
+        yield return new WaitForSeconds(speed);
+        Rend.color = Color.yellow;
+        yield return new WaitForSeconds(speed);
+        Rend.color = Color.green;
+        yield return new WaitForSeconds(speed);
+        Rend.color = Color.blue;
+        yield return new WaitForSeconds(speed);
+        Rend.color = new Color(75 / 255f, 0, 130 / 255f);
+        yield return new WaitForSeconds(speed);
+        Rend.color = new Color(127 / 255f, 0, 1);
+        yield return new WaitForSeconds(speed);
+        Disappear();
+        yield return new WaitForSeconds(2f);
+        ChooseAttack();
     }
 
     private void RandomPos()

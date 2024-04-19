@@ -33,7 +33,7 @@ public class LevelLoader : MonoBehaviour
             {
                 EnemyLeft[i].SetActive(false);
                 EnemyRight[i].SetActive(true);
-                if (EnemyRight[i].tag == "Enemy")
+                if (EnemyRight[i].tag == "Enemy" && EnemyRight[i].layer != 3)
                 {
                     EnemyRight[i].SendMessage("SetMaterial");
                 }

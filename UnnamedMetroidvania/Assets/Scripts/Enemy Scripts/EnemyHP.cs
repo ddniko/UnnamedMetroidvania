@@ -91,7 +91,7 @@ public class EnemyHP : MonoBehaviour
         yield return null;
     }
 
-    void Update() //måske fixedupdate
+    void Update()
     {
         if (EHP <= 0.1f)
         {

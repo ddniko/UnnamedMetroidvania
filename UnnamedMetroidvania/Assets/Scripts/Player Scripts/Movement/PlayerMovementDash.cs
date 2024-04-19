@@ -537,9 +537,12 @@ public class NewPlayerMovement : MonoBehaviour
             DeathFade.SetTrigger("Start");
             RB.transform.position = respawnPoint;
             PHP = MaxPHP;
-            GameObject.Find("definitely boss").SendMessage("DespawnBoss");
-            GameObject.Find("LockedPositionCamera").GetComponent<CinemachineVirtualCamera>().enabled = false;
-            GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().enabled = true;
+            if (GameObject.Find("definitely boss") != null)
+            {
+                GameObject.Find("definitely boss").SendMessage("DespawnBoss");
+                GameObject.Find("LockedPositionCamera").GetComponent<CinemachineVirtualCamera>().enabled = false;
+                GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().enabled = true;
+            }
         }
         #endregion
 
@@ -1028,13 +1031,15 @@ public class NewPlayerMovement : MonoBehaviour
             if (RB.velocity.x < 0)
             {
                 DeathSide = collision.gameObject;
-                respawnPoint = new Vector3(RB.transform.position.x + 5f, RB.transform.position.y);
+                respawnPoint = new Vector3(RB.transform.position.x + 3f, RB.transform.position.y);
+                RB.velocity = Vector3.zero;
                 DiedSide = "Right";
             }
             if (RB.velocity.x > 0)
             {
                 DeathSide = collision.gameObject;
-                respawnPoint = new Vector3(RB.transform.position.x - 5f, RB.transform.position.y);
+                respawnPoint = new Vector3(RB.transform.position.x - 3f, RB.transform.position.y);
+                RB.velocity = Vector3.zero;
                 DiedSide = "Left";
             }
         }
