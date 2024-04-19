@@ -6,6 +6,7 @@ using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Cinemachine;
 
 public class NewPlayerMovement : MonoBehaviour
 {
@@ -520,6 +521,9 @@ public class NewPlayerMovement : MonoBehaviour
             Debug.Log("I'm too young to die...");
             RB.transform.position = respawnPoint;
             PHP = MaxPHP;
+            GameObject.Find("definitely boss").SendMessage("DespawnBoss");
+            GameObject.Find("LockedPositionCamera").GetComponent<CinemachineVirtualCamera>().enabled = false;
+            GameObject.Find("Virtual Camera").GetComponent<CinemachineVirtualCamera>().enabled = true;
         }
         #endregion
     }
