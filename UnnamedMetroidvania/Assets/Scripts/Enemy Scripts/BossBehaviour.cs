@@ -12,6 +12,7 @@ public class BossBehaviour : MonoBehaviour
 
     //Combat
     private float BHP = 150;
+    private float BHPStart = 150;
     [SerializeField] private PlayerDataWithDash Data;
     [SerializeField] private NewPlayerMovement PlayerData;
     [HideInInspector] public int MPRevcory = 5;
@@ -52,9 +53,10 @@ public class BossBehaviour : MonoBehaviour
     private Transform SlamLeft;
     private Vector3 HoverPos;
 
-
+    bool startBoss;
 
     [HideInInspector] public int Attacknumber;
+
     void Start()
     {
         RedPos = transform.Find("RedPos");
@@ -73,6 +75,14 @@ public class BossBehaviour : MonoBehaviour
     
     private void Update()
     {
+        if (gameObject.activeSelf && startBoss == false)
+        {
+            startBoss = true;
+            BHP = BHPStart;
+            Debug.Log(startBoss);
+            Debug.Log(BHP);
+        }
+
         if (Input.GetKeyDown(KeyCode.N))
         {
             ChooseAttack();
@@ -295,5 +305,10 @@ public class BossBehaviour : MonoBehaviour
             Rend.material = OrigMaterial;
         }
         yield return null;
+    }
+    void DespawnBoss()
+    {
+        startBoss = false;
+        gameObject.SetActive(false);
     }
 }
