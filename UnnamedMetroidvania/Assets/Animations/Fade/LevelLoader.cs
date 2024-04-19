@@ -33,6 +33,10 @@ public class LevelLoader : MonoBehaviour
             {
                 EnemyLeft[i].SetActive(false);
                 EnemyRight[i].SetActive(true);
+                if (EnemyRight[i].tag == "Enemy")
+                {
+                    EnemyRight[i].SendMessage("SetMaterial");
+                }
             }
 
             StartCoroutine(LoadLevelRightToLeft());
@@ -43,6 +47,10 @@ public class LevelLoader : MonoBehaviour
             for (int i = 0; i < 6; i++)
             {
                 EnemyLeft[i].SetActive(true);
+                if (EnemyLeft[i].tag == "Enemy")
+                {
+                    EnemyLeft[i].SendMessage("SetMaterial");
+                }
                 EnemyRight[i].SetActive(false);
             }
 
@@ -99,6 +107,10 @@ public class LevelLoader : MonoBehaviour
             {
                 EnemyLeft[i].SetActive(false);
                 EnemyRight[i].SetActive(true);
+                if (EnemyRight[i].tag == "Enemy")
+                {
+                    EnemyRight[i].SendMessage("SetMaterial");
+                }
             }
             respawnEnemiesRight = false;
         }
@@ -111,6 +123,10 @@ public class LevelLoader : MonoBehaviour
             {
                 EnemyLeft[i].SetActive(true);
                 EnemyRight[i].SetActive(false);
+                if (EnemyLeft[i].tag == "Enemy")
+                {
+                    EnemyLeft[i].SendMessage("SetMaterial");
+                }
             }
             respawnEnemiesLeft = false;
         }

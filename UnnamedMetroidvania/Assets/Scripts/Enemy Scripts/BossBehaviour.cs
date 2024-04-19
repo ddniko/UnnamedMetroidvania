@@ -99,7 +99,6 @@ public class BossBehaviour : MonoBehaviour
 
         if (BHP <= 0)
         {
-            Debug.Log("Boss defeated");
             Destroy(gameObject);
         }
     }

@@ -57,8 +57,8 @@ MonoBehaviour:
   KnockbackForce: 30
   SDamage: 0.1
   knockbackTime: 1
-  FullChargeTime: 0.6
-  MinimumCharge: 0.25
+  FullChargeTime: 0.7
+  MinimumCharge: 0.3
   ArrowBaseDamage: 0.5
   TimeBeforeGravity: 0.5
   ArrowGravity: 4.5

@@ -15,6 +15,9 @@ TagManager:
   - Fireball
   - BossGround
   - Projectile
+  - Boss
+  - TpUp
+  - PickUp
   layers:
   - Default
   - TransparentFX

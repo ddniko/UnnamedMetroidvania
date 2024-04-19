@@ -73,7 +73,7 @@ public class NewPlayerMovement : MonoBehaviour
     [SerializeField] private GameObject Sword;
 
 
-    //Magic WIP
+    //Magic
     private int MPCost;
     [HideInInspector] public int MaxPHP;
     public Fireball FireballRightPrefab;
@@ -102,6 +102,8 @@ public class NewPlayerMovement : MonoBehaviour
     private GameObject DeathSide;
     private string DiedSide;
 
+
+    //UI
     [SerializeField] private Material RedFlash;
     private Material OrigMaterial;
     private SpriteRenderer Rend;
@@ -109,6 +111,18 @@ public class NewPlayerMovement : MonoBehaviour
     private RectTransform BowGaugeRect;
     [SerializeField] private Image ChargeBar;
     [SerializeField] private Image MinCharge;
+    [SerializeField] private Canvas UpKey;
+    [SerializeField] private Transform TpUpPos;
+    [SerializeField] private GameObject TpUp;
+    private GameObject[] PickUp;
+    private bool OnlyOne;
+    [HideInInspector] 
+    public bool WallHopOn;
+    public bool DashOn;
+    public bool DoubleHopOn;
+    public GameObject Picked;
+
+
 
     #endregion
 
@@ -170,6 +184,8 @@ public class NewPlayerMovement : MonoBehaviour
         Rend = gameObject.GetComponent<SpriteRenderer>();
         OrigMaterial = Rend.material;
 
+        PickUp = GameObject.FindGameObjectsWithTag("PickUp");
+
         BowGaugeRect = BowGauge.GetComponent<RectTransform>();
 
         _cameraFollowObject = _cameraFollowGO.GetComponent<CameraFollowingObject>();
@@ -179,6 +195,9 @@ public class NewPlayerMovement : MonoBehaviour
         MaxMP = Data.MP;
         MP = MaxMP;
 
+        WallHopOn = false;
+        DashOn = false;
+        DoubleHopOn = false;
 
         respawnPoint = RB.transform.position;
         DeathSide = gameObject;
@@ -289,8 +308,6 @@ public class NewPlayerMovement : MonoBehaviour
         if (!WeaponSwap)
         {
             bow.SetActive(true);
-            //MinCharge.fillAmount = Data.MinimumCharge / Data.FullChargeTime;
-            //MinCharge.GetComponent<RectTransform>().position = new Vector3(MinCharge.transform.position.x + Data.MinimumCharge / Data.FullChargeTime * 100, MinCharge.transform.position.y, MinCharge.transform.position.z);
             MinCharge.GetComponent<RectTransform>().localPosition = new Vector3(Data.MinimumCharge / Data.FullChargeTime * 100 - 50, 0,0);
 
 
@@ -308,7 +325,7 @@ public class NewPlayerMovement : MonoBehaviour
         {
             Release = false;
             TimeHeld = 0;
-            ShootBow(); //animation start
+            ShootBow(); 
             BowGauge.gameObject.SetActive(true);
         }
         if (Input.GetKeyUp(KeyCode.V))
@@ -407,7 +424,7 @@ public class NewPlayerMovement : MonoBehaviour
         #endregion
 
         #region DASH CHECKS
-        if (CanDash() && LastPressedDashTime > 0 && _dashesLeft >= 0) //dasher hvis man kan
+        if (CanDash() && LastPressedDashTime > 0 && _dashesLeft >= 0 && DashOn) //dasher hvis man kan
         {
             //Freeze game for split second. Adds juiciness and a bit of forgiveness over directional input
             Sleep(Data.dashSleepTime);
@@ -517,10 +534,60 @@ public class NewPlayerMovement : MonoBehaviour
         if (PHP <= 0)
         {
             DeathFade.SetTrigger("Start");
-            Debug.Log("I'm too young to die...");
             RB.transform.position = respawnPoint;
             PHP = MaxPHP;
         }
+        #endregion
+
+        #region UPKEY POSITIONS
+
+        OnlyOne = false;
+        foreach (GameObject Pick in PickUp)
+        {
+            if (Vector2.Distance(gameObject.transform.position, Pick.transform.position) < 1 && LastOnGroundTime > 0 && Pick.activeSelf)
+            {
+                OnlyOne = true;
+                UpKey.gameObject.SetActive(true);
+                if (_moveInput.y == 1)
+                {
+                    if (Pick.gameObject.name == "WallHop")
+                    {
+                        WallHopOn = true;
+                        Pick.SetActive(false);
+                        Picked = Pick;
+                        GameObject.Find("Picked").SendMessage("itemPicked");
+                    }
+                    if (Pick.gameObject.name == "Dash - press X  or shift to dash")
+                    {
+                        DashOn = true;
+                        Pick.SetActive(false);
+                        Picked = Pick;
+                        GameObject.Find("Picked").SendMessage("itemPicked");
+                    }
+                    if (Pick.gameObject.name == "DoubleHop")
+                    {
+                        DoubleHopOn = true;
+                        Pick.SetActive(false);
+                        Picked = Pick;
+                        GameObject.Find("Picked").SendMessage("itemPicked");
+                    }
+                }
+            }
+        }
+        if (Vector2.Distance(gameObject.transform.position, TpUp.transform.position) < 1 && LastOnGroundTime > 0 && !OnlyOne)
+        {
+            UpKey.gameObject.SetActive(true);
+            if (_moveInput.y == 1)
+            {
+                gameObject.transform.position = TpUpPos.position;
+            }
+        }
+        else if (!OnlyOne)
+        {
+            UpKey.gameObject.SetActive(false);
+        }
+
+
         #endregion
     }
 
@@ -543,21 +610,6 @@ public class NewPlayerMovement : MonoBehaviour
         //Handle Slide
         if (IsSliding) //starter slide
             Slide();
-        #endregion
-        
-        #region KNOCKBACK IKKE BRUGT
-        /*if (hit)
-        {
-            //Laver en normalvektor og scaler den op så spilleren tager knockback
-            Vector2 dir = new Vector2(enemyRB.position.x - RB.position.x, enemyRB.position.y - RB.position.y);
-            Vector2 force = new Vector2(dir.normalized.x, dir.normalized.y * (Data.runMaxSpeed / Data.maxFallSpeed));
-            Debug.Log(dir);
-            Debug.Log(force);
-            //RB.velocity = Vector2.zero;
-            //RB.AddForce(-dir.normalized * Data.KnockbackForce, ForceMode2D.Impulse);
-            RB.AddForce(-force * Data.KnockbackForce, ForceMode2D.Impulse);
-            hit = false
-        }*/
         #endregion
     }
 
@@ -794,13 +846,17 @@ public class NewPlayerMovement : MonoBehaviour
 
     private bool CanJump()
     {
+        if (!DoubleHopOn)
+        {
+            return JumpsLeft >= 1 && !IsJumping && !IsSliding;
+        }
         return JumpsLeft >= 0 && !IsJumping && !IsSliding;
     }
 
     private bool CanWallJump()
     {
         return LastPressedJumpTime > 0 && LastOnWallTime > 0 && LastOnGroundTime <= 0 && (!IsWallJumping ||
-             (LastOnWallRightTime > 0 && _lastWallJumpDir == 1) || (LastOnWallLeftTime > 0 && _lastWallJumpDir == -1));
+             (LastOnWallRightTime > 0 && _lastWallJumpDir == 1) || (LastOnWallLeftTime > 0 && _lastWallJumpDir == -1)) && WallHopOn;
     }
 
     private bool CanJumpCut()
@@ -825,7 +881,7 @@ public class NewPlayerMovement : MonoBehaviour
 
     public bool CanSlide()
     {
-        if (LastOnWallTime > 0 && !IsJumping && !IsWallJumping && !IsDashing && LastOnGroundTime <= 0) //hvis bufferen er gået og man ikke er midt i hop eller wallhop eller dasher eller er på jorden
+        if (LastOnWallTime > 0 && !IsJumping && !IsWallJumping && !IsDashing && LastOnGroundTime <= 0 && WallHopOn) //hvis bufferen er gået og man ikke er midt i hop eller wallhop eller dasher eller er på jorden
             return true;
         else
             return false;
@@ -869,7 +925,6 @@ public class NewPlayerMovement : MonoBehaviour
         //har man nok MP og står man på jorden
         if (MP >= MPCost && LastOnGroundTime >= 0 /*PHP < MaxPHP && Physics2D.OverlapBox(_groundCheckPoint.position, _groundCheckSize, 0, _groundLayer) && !IsJumping*/)
         {
-            Debug.Log("Heal!");
             PHP++;
             MP -= MPCost;
             //Gøre så spilleren står stille
@@ -892,7 +947,6 @@ public class NewPlayerMovement : MonoBehaviour
     {
         if (MP >= MPCost)
         {
-            Debug.Log("Fireball!");
             if (IsFacingRight) //Skyder højre fireball
             { 
                 Instantiate(FireballRightPrefab, Offset.position, transform.rotation);
@@ -911,7 +965,6 @@ public class NewPlayerMovement : MonoBehaviour
         if (MP >= MPCost && LastOnGroundTime >= 0)
         {
             MP -= MPCost;
-            Debug.Log("Slam");
             StartCoroutine(SlamAttack(0.1f));
         }
     }
@@ -996,19 +1049,14 @@ public class NewPlayerMovement : MonoBehaviour
         #region BOSS DAMAGE
         if ((BossLayer.value & (1 << collision.gameObject.layer)) > 0)
         {
-            Debug.Log("this one?");
             enemyRB = collision.gameObject.GetComponent<Rigidbody2D>();
             StartCoroutine(Ouch());
-            //Debug.Log("Hit");
             hit = true;
             RB.velocity = Vector2.zero;
             //Laver en normalvektor og scaler den op så spilleren tager knockback
             Vector2 dir = new Vector2(enemyRB.position.x - RB.position.x, enemyRB.position.y - RB.position.y);
             Vector2 force = new Vector2(dir.normalized.x * 1.5f, dir.normalized.y * (Data.runMaxSpeed / Data.maxFallSpeed));
-            //RB.velocity = Vector2.zero;
-            //RB.AddForce(-dir.normalized * Data.KnockbackForce, ForceMode2D.Impulse);
             RB.AddForce(-force * Data.KnockbackForce, ForceMode2D.Impulse);
-            //StartCoroutine(nameof(StartDash), -dir);
 
             //starter i frames
             PHP--;
@@ -1023,6 +1071,7 @@ public class NewPlayerMovement : MonoBehaviour
             StartCoroutine(Ouch());
         }
         #endregion
+
     }
     #endregion
 

@@ -19,6 +19,8 @@ public class EnemyHP : MonoBehaviour
     private Material OrigMaterial;
     [SerializeField] private float flashDur;
 
+    private bool setMaterial;
+
     public int MPRevcory = 5;
 
     private void Start()
@@ -103,6 +105,17 @@ public class EnemyHP : MonoBehaviour
             EnemyRB.constraints &= ~RigidbodyConstraints2D.FreezePositionX;
             EnemyRB.constraints = RigidbodyConstraints2D.FreezeRotation;
         }
+        if (setMaterial)
+        {
+            Rend.material = OrigMaterial;
+            setMaterial = false;
+        }
+
+    }
+
+    private void SetMaterial()
+    {
+        setMaterial = true;
     }
 }
 
